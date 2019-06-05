@@ -3644,7 +3644,7 @@ ASTTable Table()  :
 ASTPhysicalProperties PhysicalProperties()  :
 {}
 {
-	       <ORGANIZATION> <INDEX> IndexOrganizedTableClause()
+	<ORGANIZATION> <INDEX>   [SegmentAttributesClause()] IndexOrganizedTableClause()
 	  { return jjtThis ; }
 }
 
@@ -3655,8 +3655,16 @@ ASTIndexOrganizedTableClause IndexOrganizedTableClause()  :
      | <PCTTHRESHOLD> NumericLiteral()
      | ( <COMPRESS> [  NumericLiteral() ] | <NOCOMPRESS> ) //prefix_compression
      )*
-     [ <INCLUDING> Column() ] "OVERFLOW"
+     [ <INCLUDING> Column() ] "OVERFLOW" [ SegmentAttributesClause() ] //index_org_overflow_clause
 	  { return jjtThis ; }
+}
+
+void SegmentAttributesClause() #void:
+{}
+{
+     ( <TABLESPACE> <IDENTIFIER>
+     | ( <LOGGING> | <NOLOGGING> | <FILESYSTEM_LIKE_LOGGING> ) // logging_clause
+     )+
 }
 
 ASTTableColumn TableColumn()  :
@@ -4812,6 +4820,11 @@ TOKEN [IGNORE_CASE]:
 <MAPPING: "MAPPING">|
 <NOMAPPING: "NOMAPPING">|
 <PCTTHRESHOLD: "PCTTHRESHOLD">|
+<TABLESPACE: "TABLESPACE">|
+<LOGGING: "LOGGING">|
+<NOLOGGING: "NOLOGGING">|
+<FILESYSTEM_LIKE_LOGGING: "FILESYSTEM_LIKE_LOGGING">|
+
 <A: "A"> |
 <VARCHAR: "VARCHAR"> |
 <VARCHAR2: "VARCHAR2"> |
@@ -5564,7 +5577,7 @@ ASTKEYWORD_UNRESERVED KEYWORD_UNRESERVED (): {}
 //| <LOCATOR>
 //| <LOCKED>
 //| <LOGFILE>
-//| <LOGGING>
+| <LOGGING>
 //| <LOGICAL>
 //| <LOGICAL_READS_PER_CALL>
 //| <LOGICAL_READS_PER_SESSION>
@@ -5729,7 +5742,7 @@ ASTKEYWORD_UNRESERVED KEYWORD_UNRESERVED (): {}
 //| <NODELAY>
 //| <NOFORCE>
 //| <NOGUARANTEE>
-//| <NOLOGGING>
+| <NOLOGGING>
 | <NOMAPPING>
 //| <NOMAXVALUE>
 //| <NOMINIMIZE>
@@ -6071,7 +6084,7 @@ ASTKEYWORD_UNRESERVED KEYWORD_UNRESERVED (): {}
 //| <T>
 //| <TABLE_STATS>
 //| <TABLES>
-//| <TABLESPACE>
+| <TABLESPACE>
 //| <TABLESPACE_NO>
 //| <TABNO>
 | <TDO>

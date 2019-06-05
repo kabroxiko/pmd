@@ -3698,11 +3698,11 @@ void SizeClause() #void:
 {
      NumericLiteral()
      [ LOOKAHEAD(KEYWORD("K")) KEYWORD("K")
-     /*| LOOKAHEAD(KEYWORD("M")) KEYWORD("M")
+     | LOOKAHEAD(KEYWORD("M")) KEYWORD("M")
      | LOOKAHEAD(KEYWORD("G")) KEYWORD("G")
      | LOOKAHEAD(KEYWORD("T")) KEYWORD("T")
      | LOOKAHEAD(KEYWORD("P")) KEYWORD("P")
-     | LOOKAHEAD(KEYWORD("E")) KEYWORD("E")*/ ]
+     | LOOKAHEAD(KEYWORD("E")) KEYWORD("E") ]
 }
 
 /*void TableCompression() #void:

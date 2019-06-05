@@ -3634,7 +3634,7 @@ ASTTable Table()  :
   [ "(" ( LOOKAHEAD(2) OutOfLineConstraint() | TableColumn() ) ("," ( LOOKAHEAD(2) OutOfLineConstraint() | TableColumn() ))* ")" ]
   [LOOKAHEAD(4) <ON> <COMMIT> (<DROP> | <PRESERVE>) <DEFINITION>]
   [LOOKAHEAD(4) <ON> <COMMIT> (<DELETE> | <PRESERVE>) <ROWS>]
-  [LOOKAHEAD(1) PhysicalProperties()]
+  [LOOKAHEAD(2) PhysicalProperties()]
   //### [tableProperties()]
   [";"]
 
@@ -3644,7 +3644,7 @@ ASTTable Table()  :
 void PhysicalProperties() #void:
 {}
 {
-	( <INDEX> )
+	( <ORGANIZATION> <INDEX> )
 }
 
 ASTTableColumn TableColumn()  :

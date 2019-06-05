@@ -3647,7 +3647,7 @@ ASTPhysicalProperties PhysicalProperties() :
 	( [ <SEGMENT> <CREATION> ( <IMMEDIATE> | <DEFERRED> ) ] // deferred_segment_creation
           ( SegmentAttributesClause()
             [ LOOKAHEAD(2) TableCompression() ]
-            //[ InmemoryTableClause() ]
+            [ InmemoryTableClause() ]
             //[ IlmClause() ]
           | <ORGANIZATION> ( <HEAP>    [SegmentAttributesClause()] HeapOrganizedTableClause()
                            | <INDEX>   [SegmentAttributesClause()] IndexOrganizedTableClause()
@@ -3697,12 +3697,12 @@ void SizeClause() #void:
 {}
 {
      NumericLiteral()
-     [ LOOKAHEAD(KEYWORD("K")) KEYWORD("K")
+     /*[ LOOKAHEAD(KEYWORD("K")) KEYWORD("K")
      | LOOKAHEAD(KEYWORD("M")) KEYWORD("M")
      | LOOKAHEAD(KEYWORD("G")) KEYWORD("G")
      | LOOKAHEAD(KEYWORD("T")) KEYWORD("T")
      | LOOKAHEAD(KEYWORD("P")) KEYWORD("P")
-     | LOOKAHEAD(KEYWORD("E")) KEYWORD("E") ]
+     | LOOKAHEAD(KEYWORD("E")) KEYWORD("E") ]*/
 }
 
 void TableCompression() #void:
@@ -3715,16 +3715,29 @@ void TableCompression() #void:
      | <NOCOMPRESS>
 }
 
-ASTHeapOrganizedTableClause HeapOrganizedTableClause()  :
+void InmemoryTableClause() #void:
+{}
+{
+     ( <INMEMORY>
+          //[ InmemoryMemCompress() ]
+          [ <PRIORITY> ( <NONE> | <LOW> | <MEDIUM> | <HIGH> | <CRITICAL> ) ] //inmemory_priority
+          [ <DISTRIBUTE> [ <AUTO> | <BY> ( <ROWID> <RANGE> | <PARTITION> | "SUBPARTITION" ) ] ] //inmemory_distribute
+          [ [ <DUPLICATE> ] <ALL> | <NO> <DUPLICATE> ] //inmemory_duplicate
+          ( <INMEMORY> //[ InmemoryMemCompress() ]
+          | <NO> <INMEMORY> ) ( Column() ("," Column())* )*
+     | <NO> <INMEMORY> )
+}
+
+ASTHeapOrganizedTableClause HeapOrganizedTableClause() :
 {}
 {
      [ LOOKAHEAD(2) TableCompression() ]
-     //[ InmemoryTableClause() ]
+     [ InmemoryTableClause() ]
      //[ IlmClause() ]
 	  { return jjtThis ; }
 }
 
-ASTIndexOrganizedTableClause IndexOrganizedTableClause()  :
+ASTIndexOrganizedTableClause IndexOrganizedTableClause() :
 {}
 {
      ( ( <MAPPING> <TABLE> | <NOMAPPING> ) //mapping_table_clauses
@@ -3735,7 +3748,7 @@ ASTIndexOrganizedTableClause IndexOrganizedTableClause()  :
 	  { return jjtThis ; }
 }
 
-ASTExternalTableClause ExternalTableClause()  :
+ASTExternalTableClause ExternalTableClause() :
 {}
 {
      //"(" [ <TYPE> ( "ORACLE_LOADER" | "ORACLE_DATAPUMP" ) ] //ExternalDataProperties()
@@ -3744,19 +3757,7 @@ ASTExternalTableClause ExternalTableClause()  :
 	  { return jjtThis ; }
 }
 
-/*void InmemoryTableClause() #void:
-{}
-{
-     ( "INMEMORY"
-          [ InmemoryMemCompress() ]
-          [ "PRIORITY" ( <NONE> | "LOW" | "MEDIUM" | "HIGH" | "CRITICAL" ) ] //inmemory_priority
-          [ "DISTRIBUTE" [ "AUTO" | <BY> ( <ROWID> <RANGE> | <PARTITION> | "SUBPARTITION" ) ] ] //inmemory_distribute
-          [ [ "DUPLICATE" ] <ALL> | <NO> "DUPLICATE" ] //inmemory_duplicate
-          ( "INMEMORY" [ InmemoryMemCompress() ] | <NO> "INMEMORY" ) ( Column() ("," Column())* )*
-     | <NO> "INMEMORY" )
-}
-
-void IlmClause() #void:
+/*void IlmClause() #void:
 {}
 {
      "ILM"
@@ -5086,8 +5087,15 @@ TOKEN [IGNORE_CASE]:
 <QUERY: "QUERY">|
 <ARCHIVE: "ARCHIVE">|
 <LOW: "LOW">|
+<MEDIUM: "MEDIUM">|
 <HIGH: "HIGH">|
+<CRITICAL: "CRITICAL">|
 <LOCKING: "LOCKING">|
+<INMEMORY: "INMEMORY">|
+<DISTRIBUTE: "DISTRIBUTE">|
+<PRIORITY: "PRIORITY">|
+<AUTO: "AUTO">|
+<DUPLICATE: "DUPLICATE">|
 
 <A: "A"> |
 <VARCHAR: "VARCHAR"> |
@@ -5449,7 +5457,7 @@ ASTKEYWORD_UNRESERVED KEYWORD_UNRESERVED (): {}
 //| <AUTHENTICATION>
 | <AUTHID>
 //| <AUTHORIZATION>
-//| <AUTO>
+| <AUTO>
 //| <AUTOALLOCATE>
 //| <AUTOEXTEND>
 //| <AUTOMATIC>
@@ -5567,6 +5575,7 @@ ASTKEYWORD_UNRESERVED KEYWORD_UNRESERVED (): {}
 //| <CPU_PER_SESSION>
 //| <CREATE_STORED_OUTLINES>
 | <CREATION>
+| <CRITICAL>
 | <CROSS>
 | <CUBE>
 //| <CUBE_GB>
@@ -5626,6 +5635,7 @@ ASTKEYWORD_UNRESERVED KEYWORD_UNRESERVED (): {}
 //| <DISKS>
 //| <DISMOUNT>
 //| <DISTINGUISHED>
+| <DISTRIBUTE>
 //| <DISTRIBUTED>
 //| <DML>
 //| <DML_UPDATE>
@@ -5636,6 +5646,7 @@ ASTKEYWORD_UNRESERVED KEYWORD_UNRESERVED (): {}
 //| <DOWNGRADE>
 //| <DRIVING_SITE>
 //| <DUMP>
+| <DUPLICATE>
 | <DUPLICATED>
 //| <DYNAMIC>
 //| <DYNAMIC_SAMPLING>
@@ -5788,6 +5799,7 @@ ASTKEYWORD_UNRESERVED KEYWORD_UNRESERVED (): {}
 | <INITRANS>
 //| <INLINE>
 //| <INLINE_XMLTYPE_NT>
+| <INMEMORY>
 | <INNER>
 //| <INSTANCE>
 //| <INSTANCES>
@@ -5879,6 +5891,7 @@ ASTKEYWORD_UNRESERVED KEYWORD_UNRESERVED (): {}
 //| <MAXTRANS>
 //| <MAXVALUE>
 //| <MEASURES>
+| <MEDIUM>
 | <MEMBER>
 //| <MEMORY>
 | <MERGE>
@@ -6138,6 +6151,7 @@ ASTKEYWORD_UNRESERVED KEYWORD_UNRESERVED (): {}
 //| <PRESERVE_OID>
 | <PRIMARY>
 | <PRINT>
+| <PRIORITY>
 //| <PRIVATE>
 //| <PRIVATE_SGA>
 //| <PRIVILEGE>

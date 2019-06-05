@@ -3719,13 +3719,18 @@ void InmemoryTableClause() #void:
 {}
 {
      ( <INMEMORY>
-          //[ InmemoryMemCompress() ]
+          [ InmemoryMemCompress() ]
           [ <PRIORITY> ( <NONE> | <LOW> | <MEDIUM> | <HIGH> | <CRITICAL> ) ] //inmemory_priority
           [ <DISTRIBUTE> [ <AUTO> | <BY> ( <ROWID> <RANGE> | <PARTITION> | "SUBPARTITION" ) ] ] //inmemory_distribute
           [ [ <DUPLICATE> ] <ALL> | <NO> <DUPLICATE> ] //inmemory_duplicate
-          ( <INMEMORY> //[ InmemoryMemCompress() ]
-          | <NO> <INMEMORY> ) ( Column() ("," Column())* )*
+          ( <INMEMORY> [ InmemoryMemCompress() ] | <NO> <INMEMORY> ) ( Column() ("," Column())* )*
      | <NO> <INMEMORY> )
+}
+
+void InmemoryMemCompress() #void:
+{}
+{
+     <MEMCOMPRESS> <FOR> ( <DML> | <QUERY> [ <LOW> | <HIGH> ] | <CAPACITY> [ <LOW> | <HIGH> ] ) | <NO> <MEMCOMPRESS>
 }
 
 ASTHeapOrganizedTableClause HeapOrganizedTableClause() :
@@ -3791,12 +3796,6 @@ void IlmTimePeriod() #void:
 {}
 {
      NumericLiteral() ( ( <DAY> | "DAYS" ) | ( <MONTH> | "MONTHS" ) | ( <YEAR> | "YEARS" ) )
-}
-
-void InmemoryMemCompress() #void:
-{}
-{
-     "MEMCOMPRESS" <FOR> ( "DML" | "QUERY" [ "LOW" | "HIGH" ] | "CAPACITY" [ "LOW" | "HIGH" ] ) | <NO> "MEMCOMPRESS"
 }
 
 void ExternalDataProperties() #void:
@@ -5096,6 +5095,9 @@ TOKEN [IGNORE_CASE]:
 <PRIORITY: "PRIORITY">|
 <AUTO: "AUTO">|
 <DUPLICATE: "DUPLICATE">|
+<CAPACITY: "CAPACITY">|
+<MEMCOMPRESS: "MEMCOMPRESS">|
+<DML: "DML">|
 
 <A: "A"> |
 <VARCHAR: "VARCHAR"> |
@@ -5507,6 +5509,7 @@ ASTKEYWORD_UNRESERVED KEYWORD_UNRESERVED (): {}
 //| <CACHE_TEMP_TABLE>
 | <CALL>
 //| <CANCEL>
+| <CAPACITY>
 //| <CARDINALITY>
 | <CASCADE>
 //| <CASE>
@@ -5637,7 +5640,7 @@ ASTKEYWORD_UNRESERVED KEYWORD_UNRESERVED (): {}
 //| <DISTINGUISHED>
 | <DISTRIBUTE>
 //| <DISTRIBUTED>
-//| <DML>
+| <DML>
 //| <DML_UPDATE>
 //| <DOCUMENT>
 //| <DOMAIN_INDEX_NO_SORT>
@@ -5893,6 +5896,7 @@ ASTKEYWORD_UNRESERVED KEYWORD_UNRESERVED (): {}
 //| <MEASURES>
 | <MEDIUM>
 | <MEMBER>
+| <MEMCOMPRESS>
 //| <MEMORY>
 | <MERGE>
 //| <MERGE_AJ>

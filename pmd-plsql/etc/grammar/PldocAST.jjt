@@ -3654,6 +3654,57 @@ ASTPhysicalProperties PhysicalProperties()  :
 	  { return jjtThis ; }
 }
 
+void DeferredSegmentCreation() #void:
+{}
+{
+	 <SEGMENT> <CREATION> ( <IMMEDIATE> | <DEFERRED> )
+}
+
+void SegmentAttributesClause() #void:
+{}
+{
+     ( PhysicalAttributesClause()
+     | <TABLESPACE> <IDENTIFIER>
+     | ( <LOGGING> | <NOLOGGING> | <FILESYSTEM_LIKE_LOGGING> ) // logging_clause
+     )+
+}
+
+void PhysicalAttributesClause() #void:
+{}
+{
+     ( LOOKAHEAD(2) (
+     ( <PCTFREE> | <PCTUSED> | <INITRANS> ) NumericLiteral()
+     | StorageClause() ) )+ //*
+}
+
+void StorageClause() #void:
+{}
+{
+     <STORAGE> "("
+     ( <INITIAL> SizeClause()
+     | <NEXT> SizeClause()
+     | <MINEXTENTS> NumericLiteral()
+     | <MAXEXTENTS> ( NumericLiteral() | "UNLIMITED")
+     | <MAXSIZE> ( "UNLIMITED" | SizeClause() )
+     | <PCTINCREASE> NumericLiteral()
+     | <FREELISTS> NumericLiteral()
+     | <FREELIST> <GROUPS> NumericLiteral()
+     | <OPTIMAL> [ SizeClause() | <NULL> ]
+     | <BUFFER_POOL> [ <KEEP> | <RECYCLE> | <_DEFAULT> ]
+     | <FLASH_CACHE> [ <KEEP> | <NONE> | <_DEFAULT> ]
+     | <ENCRYPT>
+     )+ ")"
+}
+
+void SizeClause() #void:
+{}
+{
+     NumericLiteral() //(LOOKAHEAD(KEYWORD("K")) KEYWORD("K")| LOOKAHEAD(KEYWORD("M")) KEYWORD("M"))
+     //NumericLiteral() (LOOKAHEAD(1)  KEYWORD("K") | LOOKAHEAD(1) KEYWORD("M") )
+     //| KEYWORD("G") | KEYWORD("T") | KEYWORD("P") | KEYWORD("E") ]
+     //NumericLiteral() [ <K> | <M> | <G> | <T> | <P> | <E> ]
+}
+
 ASTHeapOrganizedTableClause HeapOrganizedTableClause()  :
 {}
 {
@@ -3850,54 +3901,6 @@ void Transform() #void:
      //lobfile_attr_list
      (<FROM> "(" <IDENTIFIER> ( "," <IDENTIFIER> )* ")" | <CLOB> | <BLOB> | "CHARACTERSET" "=" <IDENTIFIER> )*
      )
-}
-
-void DeferredSegmentCreation() #void:
-{}
-{
-	 "SEGMENT" "CREATIION" ( <IMMEDIATE> | "DEFERRED" )
-}*/
-
-void SegmentAttributesClause() #void:
-{}
-{
-     ( PhysicalAttributesClause()
-     | <TABLESPACE> <IDENTIFIER>
-     | ( <LOGGING> | <NOLOGGING> | <FILESYSTEM_LIKE_LOGGING> ) // logging_clause
-     )+
-}
-
-void PhysicalAttributesClause() #void:
-{}
-{
-     ( LOOKAHEAD(2) (
-     ( <PCTFREE> | <PCTUSED> | <INITRANS> ) NumericLiteral()
-     | StorageClause() ) )+ //*
-}
-
-void StorageClause() #void:
-{}
-{
-     <STORAGE> "("
-     ( <INITIAL> //SizeClause()
-     | <NEXT> //SizeClause()
-     | <MINEXTENTS> NumericLiteral()
-     | <MAXEXTENTS> ( NumericLiteral() | "UNLIMITED")
-     | <MAXSIZE> //( "UNLIMITED" | SizeClause() )
-     | <PCTINCREASE> NumericLiteral()
-     | <FREELISTS> NumericLiteral()
-     | <FREELIST> <GROUPS> NumericLiteral()
-     | <OPTIMAL> //[ SizeClause() | <NULL> ]
-     | <BUFFER_POOL> [ <KEEP> | <RECYCLE> | <_DEFAULT> ]
-     | <FLASH_CACHE> [ <KEEP> | <NONE> | <_DEFAULT> ]
-     | <ENCRYPT>
-     )+ ")"
-}
-
-/*void SizeClause() #void:
-{}
-{
-     NumericLiteral() [ <K> | <M> | <G> | <T> | <P> | <E> ]
 }*/
 
 ASTTableColumn TableColumn()  :
@@ -5074,6 +5077,9 @@ TOKEN [IGNORE_CASE]:
 <KEEP: "KEEP">|
 <ENCRYPT: "ENCRYPT">|
 <MAXSIZE: "MAXSIZE">|
+<SEGMENT: "SEGMENT">|
+<CREATION: "CREATION">|
+<DEFERRED: "DEFERRED">|
 
 <A: "A"> |
 <VARCHAR: "VARCHAR"> |
@@ -5550,6 +5556,7 @@ ASTKEYWORD_UNRESERVED KEYWORD_UNRESERVED (): {}
 //| <CPU_PER_CALL>
 //| <CPU_PER_SESSION>
 //| <CREATE_STORED_OUTLINES>
+| <CREATION>
 | <CROSS>
 | <CUBE>
 //| <CUBE_GB>
@@ -5584,7 +5591,7 @@ ASTKEYWORD_UNRESERVED KEYWORD_UNRESERVED (): {}
 //| <DECREMENT>
 //| <DECRYPT>
 //| <DEFERRABLE>
-//| <DEFERRED>
+| <DEFERRED>
 | <DEFINE>// SQL*Plus command
 //| <DEFINED>
 | <DEFINER>
@@ -6236,7 +6243,7 @@ ASTKEYWORD_UNRESERVED KEYWORD_UNRESERVED (): {}
 //| <SEED>
 //| <SEG_BLOCK>
 //| <SEG_FILE>
-//| <SEGMENT>
+| <SEGMENT>
 //| <SELECTIVITY>
 | <SELF> //20110524
 //| <SEMIJOIN>

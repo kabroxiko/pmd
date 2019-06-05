@@ -3647,7 +3647,7 @@ ASTPhysicalProperties PhysicalProperties() :
 	( [ <SEGMENT> <CREATION> ( <IMMEDIATE> | <DEFERRED> ) ] // deferred_segment_creation
           ( SegmentAttributesClause()
             [ LOOKAHEAD(2) TableCompression() ]
-            //[ InmemoryTableClause() ]
+            [ InmemoryTableClause() ]
             //[ IlmClause() ]
           | <ORGANIZATION> ( <HEAP>    [SegmentAttributesClause()] HeapOrganizedTableClause()
                            | <INDEX>   [SegmentAttributesClause()] IndexOrganizedTableClause()
@@ -3704,26 +3704,34 @@ void TableCompression() #void:
 {}
 {
    ( <COMPRESS>
-   | <ROW>    <STORE> <COMPRESS> [ LOOKAHEAD(KEYWORD("BASIC")) KEYWORD("BASIC") | LOOKAHEAD(KEYWORD("ADVANCED")) KEYWORD("ADVANCED") ]
-   | <COLUMN> <STORE> <COMPRESS> [ <FOR> ( LOOKAHEAD(KEYWORD("QUERY")) KEYWORD("QUERY") | LOOKAHEAD(KEYWORD("ARCHIVE")) KEYWORD("ARCHIVE") )
-                                 [ LOOKAHEAD(KEYWORD("LOW")) KEYWORD("LOW") | LOOKAHEAD(KEYWORD("HIGH")) KEYWORD("HIGH") ] ]
-                                 [ [<NO>] <ROW> <LEVEL> KEYWORD("LOCKING") ]
+   | <ROW>    KEYWORD("STORE") <COMPRESS> [ LOOKAHEAD(2) ( LOOKAHEAD(KEYWORD("BASIC")) KEYWORD("BASIC")
+                                                         | LOOKAHEAD(KEYWORD("ADVANCED")) KEYWORD("ADVANCED") ) ]
+   | <COLUMN> KEYWORD("STORE") <COMPRESS> [ <FOR> ( LOOKAHEAD(KEYWORD("QUERY")) KEYWORD("QUERY")
+                                                  | LOOKAHEAD(KEYWORD("ARCHIVE")) KEYWORD("ARCHIVE") )
+                                          [ LOOKAHEAD(2) ( LOOKAHEAD(KEYWORD("LOW")) KEYWORD("LOW")
+                                                         | LOOKAHEAD(KEYWORD("HIGH")) KEYWORD("HIGH") ) ] ]
+                                          [ [<NO>] <ROW> <LEVEL> KEYWORD("LOCKING") ]
    | <NOCOMPRESS> )
 }
 
-/*void InmemoryTableClause() #void:
+void InmemoryTableClause() #void:
 {}
 {
-     ( <INMEMORY>
-          [ InmemoryMemCompress() ]
-          [ <PRIORITY> ( <NONE> | <LOW> | <MEDIUM> | <HIGH> | <CRITICAL> ) ] //inmemory_priority
-          [ <DISTRIBUTE> [ <AUTO> | <BY> ( <ROWID> <RANGE> | <PARTITION> | "SUBPARTITION" ) ] ] //inmemory_distribute
-          [ [ <DUPLICATE> ] <ALL> | <NO> <DUPLICATE> ] //inmemory_duplicate
-          ( <INMEMORY> [ InmemoryMemCompress() ] | <NO> <INMEMORY> ) ( Column() ("," Column())* )*
-     | <NO> <INMEMORY> )
+     ( KEYWORD("INMEMORY")
+          //[ InmemoryMemCompress() ]
+          [ KEYWORD("PRIORITY") ( <NONE> | LOOKAHEAD(KEYWORD("LOW")) KEYWORD("LOW")
+                                         | LOOKAHEAD(KEYWORD("MEDIUM")) KEYWORD("MEDIUM")
+                                         | LOOKAHEAD(KEYWORD("HIGH")) KEYWORD("HIGH")
+                                         | LOOKAHEAD(KEYWORD("CRITICAL")) KEYWORD("CRITICAL") ) ] //inmemory_priority
+          [ LOOKAHEAD(KEYWORD("DISTRIBUTE")) KEYWORD("DISTRIBUTE") [ LOOKAHEAD(KEYWORD("AUTO")) KEYWORD("AUTO") | <BY> ( <ROWID> <RANGE> | <PARTITION> | "SUBPARTITION" ) ] ] //inmemory_distribute
+          [ [ LOOKAHEAD(KEYWORD("DUPLICATE")) KEYWORD("DUPLICATE") ] <ALL>
+          | <NO> KEYWORD("DUPLICATE") ] //inmemory_duplicate
+          ( LOOKAHEAD(KEYWORD("INMEMORY")) KEYWORD("INMEMORY")  /*[ InmemoryMemCompress() ]*/
+          | <NO> KEYWORD("INMEMORY") ) ( Column() ("," Column())* )*
+     | <NO> KEYWORD("INMEMORY")  )
 }
 
-void InmemoryMemCompress() #void:
+/*void InmemoryMemCompress() #void:
 {}
 {
      <MEMCOMPRESS> <FOR> ( <DML> | <QUERY> [ <LOW> | <HIGH> ] | <CAPACITY> [ <LOW> | <HIGH> ] ) | <NO> <MEMCOMPRESS>
@@ -3733,7 +3741,7 @@ ASTHeapOrganizedTableClause HeapOrganizedTableClause()  :
 {}
 {
      [ LOOKAHEAD(2) TableCompression() ]
-     //[ InmemoryTableClause() ]
+     [ InmemoryTableClause() ]
      //[ IlmClause() ]
 	  { return jjtThis ; }
 }
@@ -5077,9 +5085,9 @@ TOKEN [IGNORE_CASE]:
 <CREATION: "CREATION">|
 <DEFERRED: "DEFERRED">|
 /*<BASIC: "BASIC">|
-<ADVANCED: "ADVANCED">|*/
+<ADVANCED: "ADVANCED">|
 <STORE: "STORE">|
-/*<QUERY: "QUERY">|
+<QUERY: "QUERY">|
 <ARCHIVE: "ARCHIVE">|
 <LOW: "LOW">|
 <HIGH: "HIGH">|
@@ -6310,7 +6318,7 @@ ASTKEYWORD_UNRESERVED KEYWORD_UNRESERVED (): {}
 | <STATISTICS>
 //| <STOP>
 | <STORAGE>
-| <STORE>
+//| <STORE>
 //| <STREAMS>
 //| <STRICT>
 //| <STRING>

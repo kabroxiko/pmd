@@ -542,11 +542,6 @@ public class PLSQLParserVisitorAdapter implements PLSQLParserVisitor {
     }
 
     @Override
-    public Object visit(ASTPhysicalProperties node, Object data) {
-        return visit((PLSQLNode) node, data);
-    }
-
-    @Override
     public Object visit(ASTTableColumn node, Object data) {
         return visit((PLSQLNode) node, data);
     }

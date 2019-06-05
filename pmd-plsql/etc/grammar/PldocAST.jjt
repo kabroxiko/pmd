@@ -3646,7 +3646,7 @@ ASTPhysicalProperties PhysicalProperties() :
 {
 	( [ <SEGMENT> <CREATION> ( <IMMEDIATE> | <DEFERRED> ) ] // deferred_segment_creation
           ( SegmentAttributesClause()
-            //[ LOOKAHEAD(2) TableCompression() ]
+            [ LOOKAHEAD(2) TableCompression() ]
             //[ InmemoryTableClause() ]
             //[ IlmClause() ]
           | <ORGANIZATION> ( <HEAP>    [SegmentAttributesClause()] HeapOrganizedTableClause()
@@ -3678,19 +3678,14 @@ void StorageClause() #void:
 {}
 {
      <STORAGE> "("
-     ( <INITIAL> SizeClause()
-     | <NEXT> SizeClause()
-     | <MINEXTENTS> NumericLiteral()
-     | <MAXEXTENTS> ( NumericLiteral() | "UNLIMITED")
-     | <MAXSIZE> ( "UNLIMITED" | SizeClause() )
-     | <PCTINCREASE> NumericLiteral()
-     | <FREELISTS> NumericLiteral()
-     | <FREELIST> <GROUPS> NumericLiteral()
+     ( ( <INITIAL> | <NEXT> ) SizeClause()
+     | ( <MINEXTENTS> | <PCTINCREASE> | <FREELISTS> | <FREELIST> <GROUPS> ) NumericLiteral()
+     | <MAXEXTENTS> ( NumericLiteral() | "UNLIMITED" )
+     | <MAXSIZE> ( SizeClause() | "UNLIMITED" )
      | <OPTIMAL> [ SizeClause() | <NULL> ]
      | <BUFFER_POOL> [ <KEEP> | <RECYCLE> | <_DEFAULT> ]
      | <FLASH_CACHE> [ <KEEP> | <NONE> | <_DEFAULT> ]
-     | <ENCRYPT>
-     )+ ")"
+     | <ENCRYPT> )+ ")"
 }
 
 void SizeClause() #void:
@@ -3705,7 +3700,7 @@ void SizeClause() #void:
      | LOOKAHEAD(KEYWORD("E")) KEYWORD("E") ]
 }
 
-/*void TableCompression() #void:
+void TableCompression() #void:
 {}
 {
    <COMPRESS>
@@ -3715,7 +3710,7 @@ void SizeClause() #void:
    | <NOCOMPRESS>
 }
 
-void InmemoryTableClause() #void:
+/*void InmemoryTableClause() #void:
 {}
 {
      ( <INMEMORY>
@@ -3736,7 +3731,7 @@ void InmemoryMemCompress() #void:
 ASTHeapOrganizedTableClause HeapOrganizedTableClause()  :
 {}
 {
-     //[ LOOKAHEAD(2) TableCompression() ]
+     [ LOOKAHEAD(2) TableCompression() ]
      //[ InmemoryTableClause() ]
      //[ IlmClause() ]
 	  { return jjtThis ; }
@@ -5080,14 +5075,14 @@ TOKEN [IGNORE_CASE]:
 <SEGMENT: "SEGMENT">|
 <CREATION: "CREATION">|
 <DEFERRED: "DEFERRED">|
-/*<BASIC: "BASIC">|
+<BASIC: "BASIC">|
 <ADVANCED: "ADVANCED">|
 <STORE: "STORE">|
 <QUERY: "QUERY">|
 <ARCHIVE: "ARCHIVE">|
 <LOW: "LOW">|
 <HIGH: "HIGH">|
-<LOCKING: "LOCKING">|*/
+<LOCKING: "LOCKING">|
 
 <A: "A"> |
 <VARCHAR: "VARCHAR"> |
@@ -5420,7 +5415,7 @@ ASTKEYWORD_UNRESERVED KEYWORD_UNRESERVED (): {}
 //| <ADMIN>test_unreserved_keyword.pks
 //| <ADMINISTER>
 //| <ADMINISTRATOR>
-//|<ADVANCED>
+|<ADVANCED>
 //| <ADVISE>
 //| <ADVISOR>
 | <AFTER>
@@ -5436,7 +5431,7 @@ ASTKEYWORD_UNRESERVED KEYWORD_UNRESERVED (): {}
 //| <ANTIJOIN>
 //| <APPEND>
 | <APPLY>
-//| <ARCHIVE>
+| <ARCHIVE>
 //| <ARCHIVELOG>
 //| <ARRAY>test_unreserved_keyword.pks
 | <ASSOCIATE>
@@ -5455,7 +5450,7 @@ ASTKEYWORD_UNRESERVED KEYWORD_UNRESERVED (): {}
 //| <AUTOMATIC>
 //| <AVAILABILITY>
 //| <BACKUP>
-//|<BASIC>
+|<BASIC>
 //| <BATCH>
 //| <BECOME>
 | <BEFORE>
@@ -5735,7 +5730,7 @@ ASTKEYWORD_UNRESERVED KEYWORD_UNRESERVED (): {}
 //| <HEADER>
 | <HEAP>
 //| <HIERARCHY>
-//| <HIGH>
+| <HIGH>
 //| <HINTSET_BEGIN>
 //| <HINTSET_END>
 | <HOST>
@@ -5844,7 +5839,7 @@ ASTKEYWORD_UNRESERVED KEYWORD_UNRESERVED (): {}
 //| <LOCATION>
 //| <LOCATOR>
 //| <LOCKED>
-//|<LOCKING>
+|<LOCKING>
 //| <LOGFILE>
 | <LOGGING>
 //| <LOGICAL>
@@ -5852,7 +5847,7 @@ ASTKEYWORD_UNRESERVED KEYWORD_UNRESERVED (): {}
 //| <LOGICAL_READS_PER_SESSION>
 | <LOGOFF>
 | <LOGON>
-//| <LOW>
+| <LOW>
 //| <M>
 //| <MAIN>
 //| <MANAGE>
@@ -6155,7 +6150,7 @@ ASTKEYWORD_UNRESERVED KEYWORD_UNRESERVED (): {}
 //| <PX_GRANULE>
 //| <PX_JOIN_FILTER>
 //| <QB_NAME>
-//| <QUERY>
+| <QUERY>
 //| <QUERY_BLOCK>
 //| <QUEUE>
 //| <QUEUE_CURR>
@@ -6314,7 +6309,7 @@ ASTKEYWORD_UNRESERVED KEYWORD_UNRESERVED (): {}
 | <STATISTICS>
 //| <STOP>
 | <STORAGE>
-//| <STORE>
+| <STORE>
 //| <STREAMS>
 //| <STRICT>
 //| <STRING>

@@ -3704,10 +3704,10 @@ void TableCompression() #void:
 {}
 {
    ( <COMPRESS>
-   | <ROW> KEYWORD("STORE") <COMPRESS>    [ <BASIC> | <ADVANCED> ]
+   | <ROW> KEYWORD("STORE") <COMPRESS>    [ LOOKAHEAD(KEYWORD("BASIC")) KEYWORD("BASIC") | LOOKAHEAD(KEYWORD("ADVANCED")) KEYWORD("ADVANCED") ]
    | <COLUMN> KEYWORD("STORE") <COMPRESS> [ <FOR> ( LOOKAHEAD(KEYWORD("QUERY")) KEYWORD("QUERY") | LOOKAHEAD(KEYWORD("ARCHIVE")) KEYWORD("ARCHIVE") )
                                           [ LOOKAHEAD(KEYWORD("LOW")) KEYWORD("LOW") | LOOKAHEAD(KEYWORD("HIGH")) KEYWORD("HIGH") ] ]
-                                          [ [<NO>] <ROW> <LEVEL> LOOKAHEAD(KEYWORD("LOCKING")) KEYWORD("LOCKING") ]
+                                          [ [<NO>] <ROW> <LEVEL> KEYWORD("LOCKING") ]
    | <NOCOMPRESS> )
 }
 

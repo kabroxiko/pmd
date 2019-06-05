@@ -3850,6 +3850,12 @@ void Transform() #void:
      //lobfile_attr_list
      (<FROM> "(" <IDENTIFIER> ( "," <IDENTIFIER> )* ")" | <CLOB> | <BLOB> | "CHARACTERSET" "=" <IDENTIFIER> )*
      )
+}
+
+void DeferredSegmentCreation() #void:
+{}
+{
+	 "SEGMENT" "CREATIION" ( <IMMEDIATE> | "DEFERRED" )
 }*/
 
 void SegmentAttributesClause() #void:
@@ -3864,46 +3870,41 @@ void SegmentAttributesClause() #void:
 void PhysicalAttributesClause() #void:
 {}
 {
-     ( LOOKAHEAD(2) ( <PCTFREE> | <PCTUSED> | <INITRANS> ) NumericLiteral()
-     | StorageClause())+ //*
+     ( LOOKAHEAD(2) (
+     ( <PCTFREE> | <PCTUSED> | <INITRANS> ) NumericLiteral()
+     | StorageClause() ) )+ //*
 }
 
 void StorageClause() #void:
 {}
 {
      <STORAGE> "("
-     ( <INITIAL> //SizeClause()
-     | <NEXT> //SizeClause()
+     ( <INITIAL> SizeClause()
+     | <NEXT> SizeClause()
      | <MINEXTENTS> NumericLiteral()
      | <MAXEXTENTS> ( NumericLiteral() | "UNLIMITED")
-     //| MaxSizeClause()
+     | MaxSizeClause()
      | <PCTINCREASE> NumericLiteral()
      | <FREELISTS> NumericLiteral()
      | <FREELIST> <GROUPS> NumericLiteral()
-     | <OPTIMAL> //[ SizeClause() | <NULL> ]
+     | <OPTIMAL> [ SizeClause() | <NULL> ]
      | <BUFFER_POOL> [ <KEEP> | <RECYCLE> | <_DEFAULT> ]
      | <FLASH_CACHE> [ <KEEP> | <NONE> | <_DEFAULT> ]
      | <ENCRYPT>
      )+ ")"
 }
 
-/*void DeferredSegmentCreation() #void:
-{}
-{
-	 "SEGMENT" "CREATIION" ( <IMMEDIATE> | "DEFERRED" )
-}
-
 void MaxSizeClause() #void:
 {}
 {
-     "MAXSIZE" ( "UNLIMITED" | SizeClause() )
+     <MAXSIZE> ( "UNLIMITED" | SizeClause() )
 }
 
 void SizeClause() #void:
 {}
 {
-     NumericLiteral() [ "K" | "M" | "G" | "T" | "P" | "E" ]
-}*/
+     NumericLiteral() [ <K> | <M> | <G> | <T> | <P> | <E> ]
+}
 
 ASTTableColumn TableColumn()  :
 {
@@ -5078,6 +5079,13 @@ TOKEN [IGNORE_CASE]:
 <FLASH_CACHE: "FLASH_CACHE">|
 <KEEP: "KEEP">|
 <ENCRYPT: "ENCRYPT">|
+<MAXSIZE: "MAXSIZE">|
+<K: "K">|
+<M: "M">|
+<G: "G">|
+<T: "T">|
+<P: "P">|
+<E: "E">|
 
 <A: "A"> |
 <VARCHAR: "VARCHAR"> |
@@ -5627,7 +5635,7 @@ ASTKEYWORD_UNRESERVED KEYWORD_UNRESERVED (): {}
 //| <DYNAMIC>
 //| <DYNAMIC_SAMPLING>
 //| <DYNAMIC_SAMPLING_EST_CDN>
-//| <E>
+| <E>
 | <EACH>
 | <ELEMENT>
 //| <ELIMINATE_JOIN>
@@ -5701,7 +5709,7 @@ ASTKEYWORD_UNRESERVED KEYWORD_UNRESERVED (): {}
 | <FULL>
 | <FUNCTION>
 //| <FUNCTIONS>
-//| <G>
+| <G>
 //| <GATHER_PLAN_STATISTICS>
 //| <GBY_CONC_ROLLUP>
 //| <GENERATED>
@@ -5795,7 +5803,7 @@ ASTKEYWORD_UNRESERVED KEYWORD_UNRESERVED (): {}
 | <JAVA>
 //| <JOB>
 | <JOIN>
-//| <K>
+| <K>
 | <KEEP>
 //| <KERBEROS>
 | <KEY>
@@ -5838,7 +5846,7 @@ ASTKEYWORD_UNRESERVED KEYWORD_UNRESERVED (): {}
 //| <LOGICAL_READS_PER_SESSION>
 | <LOGOFF>
 | <LOGON>
-//| <M>
+| <M>
 //| <MAIN>
 //| <MANAGE>
 //| <MANAGED>
@@ -5860,7 +5868,7 @@ ASTKEYWORD_UNRESERVED KEYWORD_UNRESERVED (): {}
 //| <MAXLOGFILES>
 //| <MAXLOGHISTORY>
 //| <MAXLOGMEMBERS>
-//| <MAXSIZE>
+| <MAXSIZE>
 //| <MAXTRANS>
 //| <MAXVALUE>
 //| <MEASURES>
@@ -6065,7 +6073,7 @@ ASTKEYWORD_UNRESERVED KEYWORD_UNRESERVED (): {}
 //| <OVERLAPS>
 | <OVERRIDING>
 //| <OWN>
-//| <P>
+| <P>
 | <PACKAGE>
 //| <PACKAGES>
 //| <PARALLEL>
@@ -6336,7 +6344,7 @@ ASTKEYWORD_UNRESERVED KEYWORD_UNRESERVED (): {}
 //| <SYSOPER>
 //| <SYSTEM>
 //| <SYSTIMESTAMP>
-//| <T>
+| <T>
 //| <TABLE_STATS>
 //| <TABLES>
 | <TABLESPACE>

@@ -3824,27 +3824,27 @@ ASTIndexOrganizedTableClause IndexOrganizedTableClause()  :
 ASTExternalTableClause ExternalTableClause()  :
 {}
 {
-     //"(" [ <TYPE> ( "ORACLE_LOADER" | "ORACLE_DATAPUMP" ) ] //ExternalDataProperties()
-     //")"
-     //[ "REJECT" <LIMIT> ( NumericLiteral() | "UNLIMITED" ) ]
+     "(" [ <TYPE> ( LOOKAHEAD(KEYWORD("ORACLE_LOADER"))   KEYWORD("ORACLE_LOADER")
+                  | LOOKAHEAD(KEYWORD("ORACLE_DATAPUMP")) KEYWORD("ORACLE_DATAPUMP") ) ] ExternalDataProperties() ")"
+     [ LOOKAHEAD(KEYWORD("REJECT")) KEYWORD("REJECT") <LIMIT> ( NumericLiteral() | LOOKAHEAD(KEYWORD("UNLIMITED")) KEYWORD("UNLIMITED") ) ]
 	  { return jjtThis ; }
 }
 
-/*void ExternalDataProperties() #void:
+void ExternalDataProperties() #void:
 {}
 {
-     <_DEFAULT> <DIRECTORY> <IDENTIFIER> [ "ACCESS" <PARAMETERS> (
+     <_DEFAULT> <DIRECTORY> <IDENTIFIER> [ LOOKAHEAD(KEYWORD("ACCESS")) KEYWORD("ACCESS") <PARAMETERS> (
      "("
-          [RecordFormatInfoClause()]
-          [FieldDefinitions()]
+          //[RecordFormatInfoClause()]
+          //[FieldDefinitions()]
           //column_transforms
-          [ <COLUMN> "TRANSFORMS" "(" Transform() ("," Transform())* ")"]
+          [ <COLUMN> KEYWORD("TRANSFORMS") /*"(" Transform() ("," Transform())* ")"*/ ]
      ")"
      | <USING> <CLOB> Subquery() ) ]
-     "LOCATION" "(" [ <IDENTIFIER> ":" ] StringLiteral() ("," [ <IDENTIFIER> ":" ] StringLiteral())* ")"
+     KEYWORD("LOCATION") "(" [ <IDENTIFIER> ":" ] StringLiteral() ("," [ <IDENTIFIER> ":" ] StringLiteral())* ")"
 }
 
-void RecordFormatInfoClause() #void:
+/*void RecordFormatInfoClause() #void:
 {}
 {
      "RECORDS" ( ( "FIXED" | <VARIABLE> ) NumericLiteral()

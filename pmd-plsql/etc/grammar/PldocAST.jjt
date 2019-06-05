@@ -3641,10 +3641,22 @@ ASTTable Table()  :
       { return jjtThis ; }
 }
 
-void PhysicalProperties() #void:
+ASTPhysicalProperties PhysicalProperties()  :
 {}
 {
-	( <ORGANIZATION> <INDEX> )
+	       <ORGANIZATION> <INDEX> IndexOrganizedTableClause()
+	  { return jjtThis ; }
+}
+
+ASTIndexOrganizedTableClause IndexOrganizedTableClause()  :
+{}
+{
+     ( ( <MAPPING> <TABLE> | <NOMAPPING> ) //mapping_table_clauses
+     | <PCTTHRESHOLD> NumericLiteral()
+     | ( <COMPRESS> [  NumericLiteral() ] | <NOCOMPRESS> ) //prefix_compression
+     )*
+     [ <INCLUDING> Column() ] "OVERFLOW"
+	  { return jjtThis ; }
 }
 
 ASTTableColumn TableColumn()  :
@@ -4797,6 +4809,9 @@ TOKEN [IGNORE_CASE]:
 // most are not reserved, but cannot use just define them - might be resolved as identifiers
 //<WHILE: "WHILE"> |
 //<NAME: "NAME"> |
+<MAPPING: "MAPPING">|
+<NOMAPPING: "NOMAPPING">|
+<PCTTHRESHOLD: "PCTTHRESHOLD">|
 <A: "A"> |
 <VARCHAR: "VARCHAR"> |
 <VARCHAR2: "VARCHAR2"> |
@@ -5562,7 +5577,7 @@ ASTKEYWORD_UNRESERVED KEYWORD_UNRESERVED (): {}
 //| <MANAGEMENT>
 //| <MANUAL>
 | <MAP> // Bug 3512150
-//| <MAPPING>
+| <MAPPING>
 //| <MASTER>
 //| <MATCHED>
 //| <MATERIALIZE>
@@ -5715,7 +5730,7 @@ ASTKEYWORD_UNRESERVED KEYWORD_UNRESERVED (): {}
 //| <NOFORCE>
 //| <NOGUARANTEE>
 //| <NOLOGGING>
-//| <NOMAPPING>
+| <NOMAPPING>
 //| <NOMAXVALUE>
 //| <NOMINIMIZE>
 //| <NOMINVALUE>
@@ -5807,7 +5822,7 @@ ASTKEYWORD_UNRESERVED KEYWORD_UNRESERVED (): {}
 //| <PATH>
 //| <PATHS>
 //| <PCTINCREASE>
-//| <PCTTHRESHOLD>
+| <PCTTHRESHOLD>
 //| <PCTUSED>
 //| <PCTVERSION>
 | <PERCENT>

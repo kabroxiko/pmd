@@ -3864,31 +3864,30 @@ void SegmentAttributesClause() #void:
 void PhysicalAttributesClause() #void:
 {}
 {
-     ( ( <PCTFREE> | <PCTUSED> | <INITRANS> ) NumericLiteral()
-     //| StorageClause()
-      ) + //*
+     ( LOOKAHEAD(2) ( <PCTFREE> | <PCTUSED> | <INITRANS> ) NumericLiteral()
+     | StorageClause())+ //*
 }
 
-/*void StorageClause() #void:
+void StorageClause() #void:
 {}
 {
-     "STORAGE" "("
-     ( "INITIAL" SizeClause()
-     | <NEXT> SizeClause()
-     | "MINEXTENTS" NumericLiteral()
-     | "MAXEXTENTS" ( NumericLiteral() | "UNLIMITED")
-     | MaxSizeClause()
-     | "PCTINCREASE" NumericLiteral()
-     | "FREELISTS" NumericLiteral()
-     | "FREELIST" "GROUPS" NumericLiteral()
-     | "OPTIMAL" [ SizeClause() | <NULL> ]
-     | "BUFFER_POOL" [ "KEEP" | "RECYCLE" | <_DEFAULT> ]
-     | "FLASH_CACHE" [ "KEEP" | <NONE> | <_DEFAULT> ]
-     | "ENCRYPT"
+     <STORAGE> "("
+     ( <INITIAL> //SizeClause()
+     | <NEXT> //SizeClause()
+     | <MINEXTENTS> NumericLiteral()
+     | <MAXEXTENTS> ( NumericLiteral() | "UNLIMITED")
+     //| MaxSizeClause()
+     | <PCTINCREASE> NumericLiteral()
+     | <FREELISTS> NumericLiteral()
+     | <FREELIST> <GROUPS> NumericLiteral()
+     | <OPTIMAL> //[ SizeClause() | <NULL> ]
+     | <BUFFER_POOL> [ <KEEP> | <RECYCLE> | <_DEFAULT> ]
+     | <FLASH_CACHE> [ <KEEP> | <NONE> | <_DEFAULT> ]
+     | <ENCRYPT>
      )+ ")"
 }
 
-void DeferredSegmentCreation() #void:
+/*void DeferredSegmentCreation() #void:
 {}
 {
 	 "SEGMENT" "CREATIION" ( <IMMEDIATE> | "DEFERRED" )
@@ -5065,6 +5064,20 @@ TOKEN [IGNORE_CASE]:
 <FILESYSTEM_LIKE_LOGGING: "FILESYSTEM_LIKE_LOGGING">|
 <PCTUSED: "PCTUSED">|
 <INITRANS: "INITRANS">|
+<STORAGE: "STORAGE">|
+<INITIAL: "INITIAL">|
+<MINEXTENTS: "MINEXTENTS">|
+<MAXEXTENTS: "MAXEXTENTS">|
+<PCTINCREASE: "PCTINCREASE">|
+<FREELISTS: "FREELISTS">|
+<FREELIST: "FREELIST">|
+<GROUPS: "GROUPS">|
+<OPTIMAL: "OPTIMAL">|
+<BUFFER_POOL: "BUFFER_POOL">|
+<RECYCLE: "RECYCLE">|
+<FLASH_CACHE: "FLASH_CACHE">|
+<KEEP: "KEEP">|
+<ENCRYPT: "ENCRYPT">|
 
 <A: "A"> |
 <VARCHAR: "VARCHAR"> |
@@ -5461,7 +5474,7 @@ ASTKEYWORD_UNRESERVED KEYWORD_UNRESERVED (): {}
 //| <BROADCAST>
 //| <BUFFER>
 //| <BUFFER_CACHE>test_unreserved_keyword.pks
-//| <BUFFER_POOL>
+| <BUFFER_POOL>
 //| <BUILD>
 | <BULK>
 //| <BYPASS_RECURSIVE_CHECK>
@@ -5622,7 +5635,7 @@ ASTKEYWORD_UNRESERVED KEYWORD_UNRESERVED (): {}
 //| <ELIMINATE_OUTER_JOIN>
 | <EMPTY>
 | <ENABLE>
-//| <ENCRYPT>
+| <ENCRYPT>
 //| <ENCRYPTION>
 //| <END>
 //| <END_OUTLINE_DATA>
@@ -5673,6 +5686,7 @@ ASTKEYWORD_UNRESERVED KEYWORD_UNRESERVED (): {}
 //| <FIRST_ROWS>
 //| <FLAGGER>
 //| <FLASHBACK>
+| <FLASH_CACHE>
 //| <FLOB>
 //| <FLUSH>
 //| <FOLLOWING>
@@ -5680,8 +5694,8 @@ ASTKEYWORD_UNRESERVED KEYWORD_UNRESERVED (): {}
 | <FORCE>
 //| <FORCE_XML_QUERY_REWRITE>
 | <FOREIGN>
-//| <FREELIST>
-//| <FREELISTS>
+| <FREELIST>
+| <FREELISTS>
 //| <FREEPOOLS>
 //| <FRESH>
 | <FULL>
@@ -5697,7 +5711,7 @@ ASTKEYWORD_UNRESERVED KEYWORD_UNRESERVED (): {}
 //| <GLOBALLY>
 //| <GROUP_BY>
 | <GROUPING>
-//| <GROUPS>
+| <GROUPS>
 //| <GUARANTEE>
 //| <GUARANTEED>
 //| <GUARD>
@@ -5755,7 +5769,7 @@ ASTKEYWORD_UNRESERVED KEYWORD_UNRESERVED (): {}
 | <INDICES> // FORALL i I INDICES OF collection - SPARSE COLLECTIONS
 | <INFINITE>
 //| <INFORMATIONAL>
-//| <INITIAL>
+| <INITIAL>
 //| <INITIALIZED>
 //| <INITIALLY>
 | <INITRANS>
@@ -5782,7 +5796,7 @@ ASTKEYWORD_UNRESERVED KEYWORD_UNRESERVED (): {}
 //| <JOB>
 | <JOIN>
 //| <K>
-//| <KEEP>
+| <KEEP>
 //| <KERBEROS>
 | <KEY>
 //| <KEY_LENGTH>
@@ -5839,7 +5853,7 @@ ASTKEYWORD_UNRESERVED KEYWORD_UNRESERVED (): {}
 //| <MAX>
 //| <MAXARCHLOGS>
 //| <MAXDATAFILES>
-//| <MAXEXTENTS>
+| <MAXEXTENTS>
 //| <MAXIMIZE>
 //| <MAXINSTANCES>
 | <MAXLEN>
@@ -5860,7 +5874,7 @@ ASTKEYWORD_UNRESERVED KEYWORD_UNRESERVED (): {}
 //| <METHOD>
 //| <MIGRATE>
 //| <MIN>
-//| <MINEXTENTS>
+| <MINEXTENTS>
 //| <MINIMIZE>
 //| <MINIMUM>
 //| <MINUS_NULL>
@@ -6032,7 +6046,7 @@ ASTKEYWORD_UNRESERVED KEYWORD_UNRESERVED (): {}
 //| <OPERATOR>
 //| <OPT_ESTIMATE>
 //| <OPT_PARAM>
-//| <OPTIMAL>
+| <OPTIMAL>
 //| <OPTIMIZER_FEATURES_ENABLE>
 //| <OPTIMIZER_GOAL>
 //| <OR_EXPAND>
@@ -6075,7 +6089,7 @@ ASTKEYWORD_UNRESERVED KEYWORD_UNRESERVED (): {}
 //| <PASSWORD_VERIFY_FUNCTION>
 //| <PATH>
 //| <PATHS>
-//| <PCTINCREASE>
+| <PCTINCREASE>
 | <PCTTHRESHOLD>
 | <PCTUSED>
 //| <PCTVERSION>
@@ -6149,7 +6163,7 @@ ASTKEYWORD_UNRESERVED KEYWORD_UNRESERVED (): {}
 //| <RECOVER>
 //| <RECOVERABLE>
 //| <RECOVERY>
-//| <RECYCLE>
+| <RECYCLE>
 //| <RECYCLEBIN>
 //| <REDUCED>
 //| <REDUNDANCY>
@@ -6284,7 +6298,7 @@ ASTKEYWORD_UNRESERVED KEYWORD_UNRESERVED (): {}
 | <STATIC>
 | <STATISTICS>
 //| <STOP>
-//| <STORAGE>
+| <STORAGE>
 //| <STORE>
 //| <STREAMS>
 //| <STRICT>

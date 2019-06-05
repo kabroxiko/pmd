@@ -3641,23 +3641,20 @@ ASTTable Table()  :
       { return jjtThis ; }
 }
 
-ASTPhysicalProperties PhysicalProperties()  :
+ASTPhysicalProperties PhysicalProperties() :
 {}
 {
-	( //[ DeferredSegmentCreation() ]
-          ( SegmentAttributesClause() //[ TableCompression() ] [ InmemoryTableClause() ] [ IlmClause() ]
+	( [ <SEGMENT> <CREATION> ( <IMMEDIATE> | <DEFERRED> ) ] // deferred_segment_creation
+          ( SegmentAttributesClause()
+            [ LOOKAHEAD(2) TableCompression() ]
+            //[ InmemoryTableClause() ]
+            //[ IlmClause() ]
           | <ORGANIZATION> ( <HEAP>    [SegmentAttributesClause()] HeapOrganizedTableClause()
                            | <INDEX>   [SegmentAttributesClause()] IndexOrganizedTableClause()
                            | <EXTERNAL> ExternalTableClause()
                             ) )
 	| <CLUSTER> <IDENTIFIER> "(" Column() ( "," Column() )* ")" )
 	  { return jjtThis ; }
-}
-
-void DeferredSegmentCreation() #void:
-{}
-{
-	 <SEGMENT> <CREATION> ( <IMMEDIATE> | <DEFERRED> )
 }
 
 void SegmentAttributesClause() #void:
@@ -3699,16 +3696,29 @@ void StorageClause() #void:
 void SizeClause() #void:
 {}
 {
-     NumericLiteral() //(LOOKAHEAD(KEYWORD("K")) KEYWORD("K")| LOOKAHEAD(KEYWORD("M")) KEYWORD("M"))
-     //NumericLiteral() (LOOKAHEAD(1)  KEYWORD("K") | LOOKAHEAD(1) KEYWORD("M") )
-     //| KEYWORD("G") | KEYWORD("T") | KEYWORD("P") | KEYWORD("E") ]
-     //NumericLiteral() [ <K> | <M> | <G> | <T> | <P> | <E> ]
+     NumericLiteral()
+     [ LOOKAHEAD(KEYWORD("K")) KEYWORD("K")
+     | LOOKAHEAD(KEYWORD("M")) KEYWORD("M")
+     | LOOKAHEAD(KEYWORD("G")) KEYWORD("G")
+     | LOOKAHEAD(KEYWORD("T")) KEYWORD("T")
+     | LOOKAHEAD(KEYWORD("P")) KEYWORD("P")
+     | LOOKAHEAD(KEYWORD("E")) KEYWORD("E") ]
+}
+
+void TableCompression() #void:
+{}
+{
+     <COMPRESS>
+     | <ROW> <STORE> <COMPRESS> [ <BASIC> | <ADVANCED> ]
+     | <COLUMN> <STORE> <COMPRESS> [ <FOR> ( <QUERY> | <ARCHIVE> ) [ <LOW> | <HIGH> ] ]
+       [ [<NO>] <ROW> <LEVEL> <LOCKING> ]
+     | <NOCOMPRESS>
 }
 
 ASTHeapOrganizedTableClause HeapOrganizedTableClause()  :
 {}
 {
-     //[ TableCompression() ]
+     [ LOOKAHEAD(2) TableCompression() ]
      //[ InmemoryTableClause() ]
      //[ IlmClause() ]
 	  { return jjtThis ; }
@@ -3734,17 +3744,7 @@ ASTExternalTableClause ExternalTableClause()  :
 	  { return jjtThis ; }
 }
 
-/*void TableCompression() #void:
-{}
-{
-     <COMPRESS>
-     | <ROW> "STORE" <COMPRESS> [ "BASIC" | "ADVANCED" ]
-     | <COLUMN> "STORE" <COMPRESS> [ <FOR> ( "QUERY" | "ARCHIVE" ) [ "LOW" | "HIGH" ] ]
-       [ [<NO>] <ROW> <LEVEL> "LOCKING" ]
-     | <NOCOMPRESS>
-}
-
-void InmemoryTableClause() #void:
+/*void InmemoryTableClause() #void:
 {}
 {
      ( "INMEMORY"
@@ -5080,6 +5080,14 @@ TOKEN [IGNORE_CASE]:
 <SEGMENT: "SEGMENT">|
 <CREATION: "CREATION">|
 <DEFERRED: "DEFERRED">|
+<BASIC: "BASIC">|
+<ADVANCED: "ADVANCED">|
+<STORE: "STORE">|
+<QUERY: "QUERY">|
+<ARCHIVE: "ARCHIVE">|
+<LOW: "LOW">|
+<HIGH: "HIGH">|
+<LOCKING: "LOCKING">|
 
 <A: "A"> |
 <VARCHAR: "VARCHAR"> |
@@ -5412,6 +5420,7 @@ ASTKEYWORD_UNRESERVED KEYWORD_UNRESERVED (): {}
 //| <ADMIN>test_unreserved_keyword.pks
 //| <ADMINISTER>
 //| <ADMINISTRATOR>
+|<ADVANCED>
 //| <ADVISE>
 //| <ADVISOR>
 | <AFTER>
@@ -5427,7 +5436,7 @@ ASTKEYWORD_UNRESERVED KEYWORD_UNRESERVED (): {}
 //| <ANTIJOIN>
 //| <APPEND>
 | <APPLY>
-//| <ARCHIVE>
+| <ARCHIVE>
 //| <ARCHIVELOG>
 //| <ARRAY>test_unreserved_keyword.pks
 | <ASSOCIATE>
@@ -5446,6 +5455,7 @@ ASTKEYWORD_UNRESERVED KEYWORD_UNRESERVED (): {}
 //| <AUTOMATIC>
 //| <AVAILABILITY>
 //| <BACKUP>
+|<BASIC>
 //| <BATCH>
 //| <BECOME>
 | <BEFORE>
@@ -5725,7 +5735,7 @@ ASTKEYWORD_UNRESERVED KEYWORD_UNRESERVED (): {}
 //| <HEADER>
 | <HEAP>
 //| <HIERARCHY>
-//| <HIGH>
+| <HIGH>
 //| <HINTSET_BEGIN>
 //| <HINTSET_END>
 | <HOST>
@@ -5834,6 +5844,7 @@ ASTKEYWORD_UNRESERVED KEYWORD_UNRESERVED (): {}
 //| <LOCATION>
 //| <LOCATOR>
 //| <LOCKED>
+|<LOCKING>
 //| <LOGFILE>
 | <LOGGING>
 //| <LOGICAL>
@@ -5841,6 +5852,7 @@ ASTKEYWORD_UNRESERVED KEYWORD_UNRESERVED (): {}
 //| <LOGICAL_READS_PER_SESSION>
 | <LOGOFF>
 | <LOGON>
+| <LOW>
 //| <M>
 //| <MAIN>
 //| <MANAGE>
@@ -6143,7 +6155,7 @@ ASTKEYWORD_UNRESERVED KEYWORD_UNRESERVED (): {}
 //| <PX_GRANULE>
 //| <PX_JOIN_FILTER>
 //| <QB_NAME>
-//| <QUERY>
+| <QUERY>
 //| <QUERY_BLOCK>
 //| <QUEUE>
 //| <QUEUE_CURR>
@@ -6302,7 +6314,7 @@ ASTKEYWORD_UNRESERVED KEYWORD_UNRESERVED (): {}
 | <STATISTICS>
 //| <STOP>
 | <STORAGE>
-//| <STORE>
+| <STORE>
 //| <STREAMS>
 //| <STRICT>
 //| <STRING>

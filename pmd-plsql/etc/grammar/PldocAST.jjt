@@ -3646,8 +3646,8 @@ ASTPhysicalProperties PhysicalProperties() :
 {
 	( [ <SEGMENT> <CREATION> ( <IMMEDIATE> | <DEFERRED> ) ] // deferred_segment_creation
           ( SegmentAttributesClause()
-            [ LOOKAHEAD(2) TableCompression() ]
-            [ InmemoryTableClause() ]
+            //[ LOOKAHEAD(2) TableCompression() ]
+            //[ InmemoryTableClause() ]
             //[ IlmClause() ]
           | <ORGANIZATION> ( <HEAP>    [SegmentAttributesClause()] HeapOrganizedTableClause()
                            | <INDEX>   [SegmentAttributesClause()] IndexOrganizedTableClause()
@@ -3697,22 +3697,22 @@ void SizeClause() #void:
 {}
 {
      NumericLiteral()
-     /*[ LOOKAHEAD(KEYWORD("K")) KEYWORD("K")
-     | LOOKAHEAD(KEYWORD("M")) KEYWORD("M")
+     [ LOOKAHEAD(KEYWORD("K")) KEYWORD("K")
+     /*| LOOKAHEAD(KEYWORD("M")) KEYWORD("M")
      | LOOKAHEAD(KEYWORD("G")) KEYWORD("G")
      | LOOKAHEAD(KEYWORD("T")) KEYWORD("T")
      | LOOKAHEAD(KEYWORD("P")) KEYWORD("P")
-     | LOOKAHEAD(KEYWORD("E")) KEYWORD("E") ]*/
+     | LOOKAHEAD(KEYWORD("E")) KEYWORD("E")*/ ]
 }
 
-void TableCompression() #void:
+/*void TableCompression() #void:
 {}
 {
-     <COMPRESS>
-     | <ROW> <STORE> <COMPRESS> [ <BASIC> | <ADVANCED> ]
-     | <COLUMN> <STORE> <COMPRESS> [ <FOR> ( <QUERY> | <ARCHIVE> ) [ <LOW> | <HIGH> ] ]
-       [ [<NO>] <ROW> <LEVEL> <LOCKING> ]
-     | <NOCOMPRESS>
+   <COMPRESS>
+   | <ROW> <STORE> <COMPRESS> [ <BASIC> | <ADVANCED> ]
+   | <COLUMN> <STORE> <COMPRESS> [ <FOR> ( <QUERY> | <ARCHIVE> ) [ <LOW> | <HIGH> ] ]
+     [ [<NO>] <ROW> <LEVEL> <LOCKING> ]
+   | <NOCOMPRESS>
 }
 
 void InmemoryTableClause() #void:
@@ -3731,18 +3731,18 @@ void InmemoryMemCompress() #void:
 {}
 {
      <MEMCOMPRESS> <FOR> ( <DML> | <QUERY> [ <LOW> | <HIGH> ] | <CAPACITY> [ <LOW> | <HIGH> ] ) | <NO> <MEMCOMPRESS>
-}
+}*/
 
-ASTHeapOrganizedTableClause HeapOrganizedTableClause() :
+ASTHeapOrganizedTableClause HeapOrganizedTableClause()  :
 {}
 {
-     [ LOOKAHEAD(2) TableCompression() ]
-     [ InmemoryTableClause() ]
+     //[ LOOKAHEAD(2) TableCompression() ]
+     //[ InmemoryTableClause() ]
      //[ IlmClause() ]
 	  { return jjtThis ; }
 }
 
-ASTIndexOrganizedTableClause IndexOrganizedTableClause() :
+ASTIndexOrganizedTableClause IndexOrganizedTableClause()  :
 {}
 {
      ( ( <MAPPING> <TABLE> | <NOMAPPING> ) //mapping_table_clauses
@@ -3753,7 +3753,7 @@ ASTIndexOrganizedTableClause IndexOrganizedTableClause() :
 	  { return jjtThis ; }
 }
 
-ASTExternalTableClause ExternalTableClause() :
+ASTExternalTableClause ExternalTableClause()  :
 {}
 {
      //"(" [ <TYPE> ( "ORACLE_LOADER" | "ORACLE_DATAPUMP" ) ] //ExternalDataProperties()
@@ -5080,24 +5080,14 @@ TOKEN [IGNORE_CASE]:
 <SEGMENT: "SEGMENT">|
 <CREATION: "CREATION">|
 <DEFERRED: "DEFERRED">|
-<BASIC: "BASIC">|
+/*<BASIC: "BASIC">|
 <ADVANCED: "ADVANCED">|
 <STORE: "STORE">|
 <QUERY: "QUERY">|
 <ARCHIVE: "ARCHIVE">|
 <LOW: "LOW">|
-<MEDIUM: "MEDIUM">|
 <HIGH: "HIGH">|
-<CRITICAL: "CRITICAL">|
-<LOCKING: "LOCKING">|
-<INMEMORY: "INMEMORY">|
-<DISTRIBUTE: "DISTRIBUTE">|
-<PRIORITY: "PRIORITY">|
-<AUTO: "AUTO">|
-<DUPLICATE: "DUPLICATE">|
-<CAPACITY: "CAPACITY">|
-<MEMCOMPRESS: "MEMCOMPRESS">|
-<DML: "DML">|
+<LOCKING: "LOCKING">|*/
 
 <A: "A"> |
 <VARCHAR: "VARCHAR"> |
@@ -5430,7 +5420,7 @@ ASTKEYWORD_UNRESERVED KEYWORD_UNRESERVED (): {}
 //| <ADMIN>test_unreserved_keyword.pks
 //| <ADMINISTER>
 //| <ADMINISTRATOR>
-|<ADVANCED>
+//|<ADVANCED>
 //| <ADVISE>
 //| <ADVISOR>
 | <AFTER>
@@ -5446,7 +5436,7 @@ ASTKEYWORD_UNRESERVED KEYWORD_UNRESERVED (): {}
 //| <ANTIJOIN>
 //| <APPEND>
 | <APPLY>
-| <ARCHIVE>
+//| <ARCHIVE>
 //| <ARCHIVELOG>
 //| <ARRAY>test_unreserved_keyword.pks
 | <ASSOCIATE>
@@ -5459,13 +5449,13 @@ ASTKEYWORD_UNRESERVED KEYWORD_UNRESERVED (): {}
 //| <AUTHENTICATION>
 | <AUTHID>
 //| <AUTHORIZATION>
-| <AUTO>
+//| <AUTO>
 //| <AUTOALLOCATE>
 //| <AUTOEXTEND>
 //| <AUTOMATIC>
 //| <AVAILABILITY>
 //| <BACKUP>
-|<BASIC>
+//|<BASIC>
 //| <BATCH>
 //| <BECOME>
 | <BEFORE>
@@ -5509,7 +5499,6 @@ ASTKEYWORD_UNRESERVED KEYWORD_UNRESERVED (): {}
 //| <CACHE_TEMP_TABLE>
 | <CALL>
 //| <CANCEL>
-| <CAPACITY>
 //| <CARDINALITY>
 | <CASCADE>
 //| <CASE>
@@ -5578,7 +5567,6 @@ ASTKEYWORD_UNRESERVED KEYWORD_UNRESERVED (): {}
 //| <CPU_PER_SESSION>
 //| <CREATE_STORED_OUTLINES>
 | <CREATION>
-| <CRITICAL>
 | <CROSS>
 | <CUBE>
 //| <CUBE_GB>
@@ -5638,9 +5626,8 @@ ASTKEYWORD_UNRESERVED KEYWORD_UNRESERVED (): {}
 //| <DISKS>
 //| <DISMOUNT>
 //| <DISTINGUISHED>
-| <DISTRIBUTE>
 //| <DISTRIBUTED>
-| <DML>
+//| <DML>
 //| <DML_UPDATE>
 //| <DOCUMENT>
 //| <DOMAIN_INDEX_NO_SORT>
@@ -5649,7 +5636,6 @@ ASTKEYWORD_UNRESERVED KEYWORD_UNRESERVED (): {}
 //| <DOWNGRADE>
 //| <DRIVING_SITE>
 //| <DUMP>
-| <DUPLICATE>
 | <DUPLICATED>
 //| <DYNAMIC>
 //| <DYNAMIC_SAMPLING>
@@ -5749,7 +5735,7 @@ ASTKEYWORD_UNRESERVED KEYWORD_UNRESERVED (): {}
 //| <HEADER>
 | <HEAP>
 //| <HIERARCHY>
-| <HIGH>
+//| <HIGH>
 //| <HINTSET_BEGIN>
 //| <HINTSET_END>
 | <HOST>
@@ -5802,7 +5788,6 @@ ASTKEYWORD_UNRESERVED KEYWORD_UNRESERVED (): {}
 | <INITRANS>
 //| <INLINE>
 //| <INLINE_XMLTYPE_NT>
-| <INMEMORY>
 | <INNER>
 //| <INSTANCE>
 //| <INSTANCES>
@@ -5859,7 +5844,7 @@ ASTKEYWORD_UNRESERVED KEYWORD_UNRESERVED (): {}
 //| <LOCATION>
 //| <LOCATOR>
 //| <LOCKED>
-|<LOCKING>
+//|<LOCKING>
 //| <LOGFILE>
 | <LOGGING>
 //| <LOGICAL>
@@ -5867,7 +5852,7 @@ ASTKEYWORD_UNRESERVED KEYWORD_UNRESERVED (): {}
 //| <LOGICAL_READS_PER_SESSION>
 | <LOGOFF>
 | <LOGON>
-| <LOW>
+//| <LOW>
 //| <M>
 //| <MAIN>
 //| <MANAGE>
@@ -5894,9 +5879,7 @@ ASTKEYWORD_UNRESERVED KEYWORD_UNRESERVED (): {}
 //| <MAXTRANS>
 //| <MAXVALUE>
 //| <MEASURES>
-| <MEDIUM>
 | <MEMBER>
-| <MEMCOMPRESS>
 //| <MEMORY>
 | <MERGE>
 //| <MERGE_AJ>
@@ -6155,7 +6138,6 @@ ASTKEYWORD_UNRESERVED KEYWORD_UNRESERVED (): {}
 //| <PRESERVE_OID>
 | <PRIMARY>
 | <PRINT>
-| <PRIORITY>
 //| <PRIVATE>
 //| <PRIVATE_SGA>
 //| <PRIVILEGE>
@@ -6173,7 +6155,7 @@ ASTKEYWORD_UNRESERVED KEYWORD_UNRESERVED (): {}
 //| <PX_GRANULE>
 //| <PX_JOIN_FILTER>
 //| <QB_NAME>
-| <QUERY>
+//| <QUERY>
 //| <QUERY_BLOCK>
 //| <QUEUE>
 //| <QUEUE_CURR>
@@ -6332,7 +6314,7 @@ ASTKEYWORD_UNRESERVED KEYWORD_UNRESERVED (): {}
 | <STATISTICS>
 //| <STOP>
 | <STORAGE>
-| <STORE>
+//| <STORE>
 //| <STREAMS>
 //| <STRICT>
 //| <STRING>

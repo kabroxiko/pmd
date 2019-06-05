@@ -3835,7 +3835,8 @@ void ExternalDataProperties() #void:
 {
      <_DEFAULT> <DIRECTORY> <IDENTIFIER> [ LOOKAHEAD(KEYWORD("ACCESS")) KEYWORD("ACCESS") <PARAMETERS> (
      "("
-          //[RecordFormatInfoClause()]
+          //access_parameters: https://docs.oracle.com/database/121/SUTIL/GUID-00393686-44CB-4A4D-BD2C-C4AD174DACA5.htm#SUTIL1379
+          [ RecordFormatInfoClause() ]
           //[FieldDefinitions()]
           //column_transforms
           [ <COLUMN> KEYWORD("TRANSFORMS") /*"(" Transform() ("," Transform())* ")"*/ ]
@@ -3844,25 +3845,28 @@ void ExternalDataProperties() #void:
      KEYWORD("LOCATION") "(" [ <IDENTIFIER> ":" ] StringLiteral() ("," [ <IDENTIFIER> ":" ] StringLiteral())* ")"
 }
 
-/*void RecordFormatInfoClause() #void:
-{}
-{
-     "RECORDS" ( ( "FIXED" | <VARIABLE> ) NumericLiteral()
-               | "DELIMITED" <BY> ( "NEWLINE" | StringLiteral() | <CHARACTER_LITERAL> ) )
-     ( ( "CHARACTERSET" | <LANGUAGE> | "TERRITORY" )
-     ( StringLiteral() | <IDENTIFIER> ) //https://docs.oracle.com/cd/B19306_01/server.102/b14215/img_text/et_string.htm
-     | <DATA> <IS> ( "LITTLE" | "BIG" ) "ENDIAN"
-     | "BYTEORDERMARK" ( <CHECK> | "NOCHECK" )
-     | <STRING> <SIZE> "ARE" <IN> ( "BYTES" | "CHARACTERS" )
-     | "LOAD" <WHEN> Condition()
-     | ( "NOBADFILE" | "BADFILE" [ <IDENTIFIER> ":" ] StringLiteral() )
-     | ( "NODISCARDFILE" | "DISCARDFILE" [ <IDENTIFIER> ":" ] StringLiteral() )
-     | ( "NOLOGFILE" | "LOGFILE" [ <IDENTIFIER> ":" ] StringLiteral() )
-     | ( "READSIZE" | "DATE_CACHE" | "SKIP" ) NumericLiteral()
-     )*
-}
+void RecordFormatInfoClause() #void:
+  {}
+  {
+      //record_format_info: https://docs.oracle.com/database/121/SUTIL/GUID-A077C3A6-B1AE-4D8B-98E6-E1C1AE34B63F.htm#SUTIL1380
+      KEYWORD("RECORDS") ( LOOKAHEAD(1) ( LOOKAHEAD(KEYWORD("FIXED")) KEYWORD("FIXED") | <VARIABLE> ) NumericLiteral()
+                         | LOOKAHEAD(KEYWORD("DELIMITED")) KEYWORD("DELIMITED") <BY> ( LOOKAHEAD(KEYWORD("NEWLINE")) KEYWORD("NEWLINE") | StringLiteral() | <CHARACTER_LITERAL> ) )
+       ( LOOKAHEAD(1) ( LOOKAHEAD(KEYWORD("CHARACTERSET")) KEYWORD("CHARACTERSET")
+                      | <LANGUAGE>
+                      | LOOKAHEAD(KEYWORD("TERRITORY")) KEYWORD("TERRITORY") )
+       ( StringLiteral() | <IDENTIFIER> ) //https://docs.oracle.com/cd/B19306_01/server.102/b14215/img_text/et_string.htm
+       | <DATA> <IS> ( LOOKAHEAD(KEYWORD("LITTLE")) KEYWORD("LITTLE") | LOOKAHEAD(KEYWORD("BIG")) KEYWORD("BIG") ) KEYWORD("ENDIAN")
+       | LOOKAHEAD(KEYWORD("BYTEORDERMARK")) KEYWORD("BYTEORDERMARK") ( <CHECK> | LOOKAHEAD(KEYWORD("NOCHECK")) KEYWORD("NOCHECK") )
+       | <STRING> <SIZE> KEYWORD("ARE") <IN> ( LOOKAHEAD(KEYWORD("BYTES")) KEYWORD("BYTES") | LOOKAHEAD(KEYWORD("CHARACTERS")) KEYWORD("CHARACTERS") )
+       | LOOKAHEAD(KEYWORD("LOAD")) KEYWORD("LOAD") <WHEN> Condition()
+       | ( LOOKAHEAD(KEYWORD("NOBADFILE")) KEYWORD("NOBADFILE") | LOOKAHEAD(KEYWORD("BADFILE")) KEYWORD("BADFILE") [ <IDENTIFIER> ":" ] StringLiteral() )
+       //| ( LOOKAHEAD(KEYWORD("NODISCARDFILE")) KEYWORD("NODISCARDFILE") | LOOKAHEAD(KEYWORD("DISCARDFILE")) KEYWORD("DISCARDFILE") [ <IDENTIFIER> ":" ] StringLiteral() )
+       //| ( LOOKAHEAD(KEYWORD("NOLOGFILE")) KEYWORD("NOLOGFILE") |LOOKAHEAD(KEYWORD("LOGFILE")) KEYWORD("LOGFILE") [ <IDENTIFIER> ":" ] StringLiteral() )
+       //| ( LOOKAHEAD(KEYWORD("READSIZE")) KEYWORD("READSIZE") | LOOKAHEAD(KEYWORD("DATE_CACHE")) KEYWORD("DATE_CACHE") | LOOKAHEAD(KEYWORD("SKIP")) KEYWORD("SKIP") ) NumericLiteral()
+       )*
+  }
 
-void FieldDefinitions() #void:
+/*void FieldDefinitions() #void:
 {}
 {
      "FIELDS"

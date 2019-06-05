@@ -3641,10 +3641,11 @@ ASTTable Table()  :
       { return jjtThis ; }
 }
 
-void PhysicalProperties() #void:
+ASTPhysicalProperties PhysicalProperties() :
 {}
 {
 	( <ORGANIZATION> <INDEX> )
+      { return jjtThis ; }
 }
 
 ASTTableColumn TableColumn()  :

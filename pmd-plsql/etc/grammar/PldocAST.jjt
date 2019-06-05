@@ -3647,7 +3647,7 @@ ASTPhysicalProperties PhysicalProperties() :
 	( [ <SEGMENT> <CREATION> ( <IMMEDIATE> | <DEFERRED> ) ] // deferred_segment_creation
           ( SegmentAttributesClause()
             [ LOOKAHEAD(2) TableCompression() ]
-            [ InmemoryTableClause() ]
+            [ LOOKAHEAD(2) InmemoryTableClause() ]
             //[ IlmClause() ]
           | <ORGANIZATION> ( <HEAP>    [SegmentAttributesClause()] HeapOrganizedTableClause()
                            | <INDEX>   [SegmentAttributesClause()] IndexOrganizedTableClause()
@@ -3704,13 +3704,13 @@ void TableCompression() #void:
 {}
 {
    ( <COMPRESS>
-   | <ROW>    KEYWORD("STORE") <COMPRESS> [ LOOKAHEAD(2) ( LOOKAHEAD(KEYWORD("BASIC")) KEYWORD("BASIC")
+   | <ROW>    KEYWORD("STORE") <COMPRESS> [ LOOKAHEAD(1) ( LOOKAHEAD(KEYWORD("BASIC")) KEYWORD("BASIC")
                                                          | LOOKAHEAD(KEYWORD("ADVANCED")) KEYWORD("ADVANCED") ) ]
    | <COLUMN> KEYWORD("STORE") <COMPRESS> [ <FOR> ( LOOKAHEAD(KEYWORD("QUERY")) KEYWORD("QUERY")
                                                   | LOOKAHEAD(KEYWORD("ARCHIVE")) KEYWORD("ARCHIVE") )
-                                          [ LOOKAHEAD(2) ( LOOKAHEAD(KEYWORD("LOW")) KEYWORD("LOW")
+                                          [ LOOKAHEAD(1) ( LOOKAHEAD(KEYWORD("LOW")) KEYWORD("LOW")
                                                          | LOOKAHEAD(KEYWORD("HIGH")) KEYWORD("HIGH") ) ] ]
-                                          [ [<NO>] <ROW> <LEVEL> KEYWORD("LOCKING") ]
+                                          [ LOOKAHEAD(1) ( [ <NO> ] <ROW> <LEVEL> KEYWORD("LOCKING") ) ]
    | <NOCOMPRESS> )
 }
 
@@ -3718,30 +3718,45 @@ void InmemoryTableClause() #void:
 {}
 {
      ( KEYWORD("INMEMORY")
-          //[ InmemoryMemCompress() ]
-          [ KEYWORD("PRIORITY") ( <NONE> | LOOKAHEAD(KEYWORD("LOW")) KEYWORD("LOW")
-                                         | LOOKAHEAD(KEYWORD("MEDIUM")) KEYWORD("MEDIUM")
-                                         | LOOKAHEAD(KEYWORD("HIGH")) KEYWORD("HIGH")
-                                         | LOOKAHEAD(KEYWORD("CRITICAL")) KEYWORD("CRITICAL") ) ] //inmemory_priority
-          [ LOOKAHEAD(KEYWORD("DISTRIBUTE")) KEYWORD("DISTRIBUTE") [ LOOKAHEAD(KEYWORD("AUTO")) KEYWORD("AUTO") | <BY> ( <ROWID> <RANGE> | <PARTITION> | "SUBPARTITION" ) ] ] //inmemory_distribute
-          [ [ LOOKAHEAD(KEYWORD("DUPLICATE")) KEYWORD("DUPLICATE") ] <ALL>
-          | <NO> KEYWORD("DUPLICATE") ] //inmemory_duplicate
-          ( LOOKAHEAD(KEYWORD("INMEMORY")) KEYWORD("INMEMORY")  /*[ InmemoryMemCompress() ]*/
-          | <NO> KEYWORD("INMEMORY") ) ( Column() ("," Column())* )*
+          [ InmemoryMemCompress() ]
+          //inmemory_priority: https://docs.oracle.com/database/121/SQLRF/statements_7002.htm#CEGJGCDF
+          [ LOOKAHEAD(2) ( KEYWORD("PRIORITY") ( <NONE>
+                                               | LOOKAHEAD(KEYWORD("LOW")) KEYWORD("LOW")
+                                               | LOOKAHEAD(KEYWORD("MEDIUM")) KEYWORD("MEDIUM")
+                                               | LOOKAHEAD(KEYWORD("HIGH")) KEYWORD("HIGH")
+                                               | LOOKAHEAD(KEYWORD("CRITICAL")) KEYWORD("CRITICAL") ) ) ]
+          //inmemory_distribute: https://docs.oracle.com/database/121/SQLRF/statements_7002.htm#CEGCEDJH
+          [ LOOKAHEAD(KEYWORD("DISTRIBUTE")) KEYWORD("DISTRIBUTE")
+                                               [ LOOKAHEAD(1) ( LOOKAHEAD(KEYWORD("AUTO")) KEYWORD("AUTO")
+                                               | <BY> ( <ROWID> <RANGE> | <PARTITION> | "SUBPARTITION" ) ) ] ]
+          //inmemory_duplicate: https://docs.oracle.com/database/121/SQLRF/statements_7002.htm#CEGFFGHA
+          [ LOOKAHEAD(2) ( LOOKAHEAD(KEYWORD("DUPLICATE")) KEYWORD("DUPLICATE") [ <ALL> ]
+                         | <NO> KEYWORD("DUPLICATE") ) ]
+
+          //inmemory_column_clause: https://docs.oracle.com/database/121/SQLRF/statements_7002.htm#CEGJEEBB
+          ( LOOKAHEAD(2) ( LOOKAHEAD(KEYWORD("INMEMORY")) KEYWORD("INMEMORY")  [ InmemoryMemCompress() ]
+                         | <NO> KEYWORD("INMEMORY") ) ( Column() ("," Column())* ) )*
      | <NO> KEYWORD("INMEMORY")  )
 }
 
-/*void InmemoryMemCompress() #void:
+void InmemoryMemCompress() #void:
 {}
 {
-     <MEMCOMPRESS> <FOR> ( <DML> | <QUERY> [ <LOW> | <HIGH> ] | <CAPACITY> [ <LOW> | <HIGH> ] ) | <NO> <MEMCOMPRESS>
-}*/
+     //inmemory_memcompress: https://docs.oracle.com/database/121/SQLRF/statements_7002.htm#CEGEIIGJ
+     ( KEYWORD("MEMCOMPRESS") <FOR>
+                  ( LOOKAHEAD(KEYWORD("DML")) KEYWORD("DML")
+                  | ( LOOKAHEAD(KEYWORD("QUERY")) KEYWORD("QUERY")
+                    | LOOKAHEAD(KEYWORD("CAPACITY")) KEYWORD("CAPACITY") )
+                                                      [ LOOKAHEAD(KEYWORD("LOW")) KEYWORD("LOW")
+                                                      | LOOKAHEAD(KEYWORD("HIGH")) KEYWORD("HIGH") ] )
+     | <NO> KEYWORD("MEMCOMPRESS") )
+}
 
 ASTHeapOrganizedTableClause HeapOrganizedTableClause()  :
 {}
 {
      [ LOOKAHEAD(2) TableCompression() ]
-     [ InmemoryTableClause() ]
+     [ LOOKAHEAD(2) InmemoryTableClause() ]
      //[ IlmClause() ]
 	  { return jjtThis ; }
 }

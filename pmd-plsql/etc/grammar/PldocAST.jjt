@@ -3836,8 +3836,8 @@ void ExternalDataProperties() #void:
      <_DEFAULT> <DIRECTORY> <IDENTIFIER> [ LOOKAHEAD(KEYWORD("ACCESS")) KEYWORD("ACCESS") <PARAMETERS> (
      "("
           //access_parameters: https://docs.oracle.com/database/121/SUTIL/GUID-00393686-44CB-4A4D-BD2C-C4AD174DACA5.htm#SUTIL1379
-          [ RecordFormatInfoClause() ]
-          //[FieldDefinitions()]
+          [ LOOKAHEAD(1) RecordFormatInfoClause() ]
+          [ FieldDefinitions() ]
           //column_transforms
           [ <COLUMN> KEYWORD("TRANSFORMS") /*"(" Transform() ("," Transform())* ")"*/ ]
      ")"
@@ -3851,7 +3851,7 @@ void RecordFormatInfoClause() #void:
     //record_format_info: https://docs.oracle.com/database/121/SUTIL/GUID-A077C3A6-B1AE-4D8B-98E6-E1C1AE34B63F.htm#SUTIL1380
     KEYWORD("RECORDS") ( LOOKAHEAD(1) ( LOOKAHEAD(KEYWORD("FIXED")) KEYWORD("FIXED") | <VARIABLE> ) NumericLiteral()
                      | LOOKAHEAD(KEYWORD("DELIMITED")) KEYWORD("DELIMITED") <BY> ( LOOKAHEAD(KEYWORD("NEWLINE")) KEYWORD("NEWLINE") | StringLiteral() | <CHARACTER_LITERAL> ) )
-    ( EtRecordSpecOptions() )*
+    ( LOOKAHEAD(1) EtRecordSpecOptions() )*
 }
 
 void EtRecordSpecOptions() #void:
@@ -3875,8 +3875,8 @@ void EtRecordSpecOptions() #void:
                    | LOOKAHEAD(KEYWORD("DATE_CACHE")) KEYWORD("DATE_CACHE")
                    | LOOKAHEAD(KEYWORD("SKIP"))       KEYWORD("SKIP") ) NumericLiteral()
     | LOOKAHEAD(KEYWORD("DISABLE_DIRECTORY_LINK_CHECK"))   KEYWORD("DISABLE_DIRECTORY_LINK_CHECK")
-    | KEYWORD("FILE_NAMES") ( KEYWORD("FIRST") KEYWORD("FILE") [KEYWORD("IGNORE")]
-                            | <ALL> KEYWORD("FILES") [KEYWORD("IGNORE")]
+    | KEYWORD("FILE_NAMES") ( ( KEYWORD("FIRST") KEYWORD("FILE")
+                              | <ALL> KEYWORD("FILES") ) [ LOOKAHEAD(1) KEYWORD("IGNORE") ]
                             | <NONE> )
 }
 
@@ -3891,22 +3891,22 @@ void EtOutputFiles() #void:
                    | LOOKAHEAD(KEYWORD("LOGFILE"))       KEYWORD("LOGFILE")     [ <IDENTIFIER> ":" ] StringLiteral() ) )
 }
 
-/*void FieldDefinitions() #void:
+void FieldDefinitions() #void:
 {}
 {
-     "FIELDS"
-     [DelimSpec()]
-     [TrimSpec()]
-     [ "MISSING" "FIELD" <VALUES> "ARE" <NULL> ]
-     [ "REJECT" <ROWS> <WITH> <ALL> <NULL> "FIELDS" ]
+     KEYWORD("FIELDS")
+     //[DelimSpec()]
+     //[TrimSpec()]
+     [ LOOKAHEAD(KEYWORD("MISSING")) KEYWORD("MISSING") KEYWORD("FIELD") <VALUES> KEYWORD("ARE") <NULL> ]
+     [ LOOKAHEAD(KEYWORD("REJECT")) KEYWORD("REJECT") <ROWS> <WITH> <ALL> <NULL> KEYWORD("FIELDS") ]
      //field_list
      [ "("
-     <IDENTIFIER> [ PosSpecClause() ] [ DatatypeSpec() ] [ ( "DEFAULTIF" | <NULLIF> ) Condition() ]
-     (","  (<IDENTIFIER> [ PosSpecClause() ] [ DatatypeSpec() ] [ ( "DEFAULTIF" | <NULLIF> ) Condition() ] ) )*
+     <IDENTIFIER> [ PosSpecClause() ] [ DatatypeSpec() ] [ ( LOOKAHEAD(KEYWORD("DEFAULTIF")) KEYWORD("DEFAULTIF") | <NULLIF> ) Condition() ]
+     (","  (<IDENTIFIER> [ PosSpecClause() ] [ DatatypeSpec() ] [ ( LOOKAHEAD(KEYWORD("DEFAULTIF")) KEYWORD("DEFAULTIF") | <NULLIF> ) Condition() ] ) )*
      ")" ]
 }
 
-void DelimSpec() #void:
+/*void DelimSpec() #void:
 {}
 {
      ( "ENCLOSED" <BY> ( <QUOTED_LITERAL> | <CHARACTER_LITERAL> ) [ <AND> ( <QUOTED_LITERAL> | <CHARACTER_LITERAL> ) ]
@@ -3918,40 +3918,40 @@ void TrimSpec() #void:
 {}
 {
      ( "LRTRIM" | "NOTRIM" | "LTRIM" | "RTRIM" | "LDRTRIM" )
-}
+}*/
 
 void PosSpecClause() #void:
 {}
 {
-     [ "POSITION" ] "(" ["*"] [ [ "+" | "-" ] NumericLiteral() ]
+     [ LOOKAHEAD(KEYWORD("POSITION")) KEYWORD("POSITION") ] "(" ["*"] [ [ "+" | "-" ] NumericLiteral() ]
                           ( ":" [ "+" | "-" ] NumericLiteral() | <IDENTIFIER> ) ")"
 }
 
 void DatatypeSpec() #void:
 {}
 {
-     ( [ "UNSIGNED" ] <INTEGER> [ <EXTERNAL> ] [ "(" NumericLiteral() ")" ] [ DelimSpec() ]
-     | ( <DECIMAL> | "ZONED" ) [ <EXTERNAL> [ "(" NumericLiteral() ")" ] [ DelimSpec() ]
+     ( [ LOOKAHEAD(KEYWORD("UNSIGNED")) KEYWORD("UNSIGNED") ] <INTEGER> [ <EXTERNAL> ] [ "(" NumericLiteral() ")" ] //[ DelimSpec() ]
+     | ( <DECIMAL> | LOOKAHEAD(KEYWORD("ZONED")) KEYWORD("ZONED") ) [ <EXTERNAL> [ "(" NumericLiteral() ")" ] //[ DelimSpec() ]
                                | "(" NumericLiteral() [ "," NumericLiteral() ] ")" ]
-     | "ORACLE_DATE"
-     | "ORACLE_NUMBER" [ "COUNTED" ]
-     | <FLOAT> [ <EXTERNAL> ] [ "(" NumericLiteral() ")" ] [ DelimSpec() ]
+     | LOOKAHEAD(KEYWORD("ORACLE_DATE")) KEYWORD("ORACLE_DATE")
+     | LOOKAHEAD(KEYWORD("ORACLE_NUMBER")) KEYWORD("ORACLE_NUMBER") [ LOOKAHEAD(KEYWORD("COUNTED")) KEYWORD("COUNTED") ]
+     | <FLOAT> [ <EXTERNAL> ] [ "(" NumericLiteral() ")" ] //[ DelimSpec() ]
      | <DOUBLE>
-     | "BINARY_FLOAT" [ <EXTERNAL> ] [ "(" NumericLiteral() ")" ] [ DelimSpec() ]
-     | "BINARY_DOUBLE"
+     | LOOKAHEAD(KEYWORD("BINARY_FLOAT")) KEYWORD("BINARY_FLOAT") [ <EXTERNAL> ] [ "(" NumericLiteral() ")" ] //[ DelimSpec() ]
+     | LOOKAHEAD(KEYWORD("BINARY_DOUBLE")) KEYWORD("BINARY_DOUBLE")
      | <RAW> [ "(" NumericLiteral() ")" ]
-     | <CHAR> [ "(" NumericLiteral() ")" ] [ DelimSpec() ] [ TrimSpec() ]
+     | <CHAR> [ "(" NumericLiteral() ")" ] //[ DelimSpec() ] [ TrimSpec() ]
                  //DateFormatSpec()
-                 [["DATE_FORMAT"]
-                 (( <DATE>
-                 | <TIME> [<WITH> (<TIME> <ZONE>|"TIMEZONE")]
-                 | <TIMESTAMP> [<WITH> [<LOCAL>] (<TIME> <ZONE>|"TIMEZONE")] ) "MASK" <QUOTED_LITERAL>
-                 | <INTERVAL> ( "YEAR_TO_MONTH" | "DAY_TO_SECOND" ))]
-     | ( <VARCHAR> | "VARRAW" | "VARCHARC" | "VARRAWC" ) "(" [ NumericLiteral() "," ] NumericLiteral() ")"
+                 [ [ LOOKAHEAD(KEYWORD("DATE_FORMAT")) KEYWORD("DATE_FORMAT") ]
+                 ( ( <DATE>
+                 | <TIME> [ <WITH> ( <TIME> <ZONE> | LOOKAHEAD(KEYWORD("TIMEZONE")) KEYWORD("TIMEZONE") ) ]
+                 | <TIMESTAMP> [ <WITH> [<LOCAL>] ( <TIME> <ZONE> | LOOKAHEAD(KEYWORD("TIMEZONE")) KEYWORD("TIMEZONE") ) ] ) KEYWORD("MASK") <QUOTED_LITERAL>
+                 | <INTERVAL> ( LOOKAHEAD(KEYWORD("YEAR_TO_MONTH")) KEYWORD("YEAR_TO_MONTH") | LOOKAHEAD(KEYWORD("DAY_TO_SECOND")) KEYWORD("DAY_TO_SECOND") ) ) ]
+     | ( <VARCHAR> | LOOKAHEAD(KEYWORD("VARRAW")) KEYWORD("VARRAW") | LOOKAHEAD(KEYWORD("VARCHARC")) KEYWORD("VARCHARC") | LOOKAHEAD(KEYWORD("VARRAWC")) KEYWORD("VARRAWC") ) "(" [ NumericLiteral() "," ] NumericLiteral() ")"
      )
 }
 
-void Transform() #void:
+/*void Transform() #void:
 {}
 {
      <IDENTIFIER> <FROM>

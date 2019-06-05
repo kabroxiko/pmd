@@ -3755,8 +3755,11 @@ void InmemoryMemCompress() #void:
 void IlmClause() #void:
 {}
 {
+     //ilm_clause: https://docs.oracle.com/database/121/SQLRF/statements_7002.htm#CJAIIDEA
      KEYWORD("ILM")
-     ( <ADD> KEYWORD("POLICY") ( IlmCompressionPolicy() | IlmTieringPolicy() )
+     ( <ADD> KEYWORD("POLICY")
+           //ilm_policy_clause: https://docs.oracle.com/database/121/SQLRF/statements_7002.htm#CJAIHFAD
+           ( IlmCompressionPolicy() | IlmTieringPolicy() )
      | ( <DELETE> | <ENABLE> | <DISABLE> ) KEYWORD("POLICY") <IDENTIFIER>
      | LOOKAHEAD(1) ( LOOKAHEAD(KEYWORD("DELETE_ALL")) KEYWORD("DELETE_ALL")
                     | LOOKAHEAD(KEYWORD("ENABLE_ALL")) KEYWORD("ENABLE_ALL")
@@ -3767,24 +3770,35 @@ void IlmClause() #void:
 void IlmCompressionPolicy() #void:
 {}
 {
-     ( TableCompression() ( LOOKAHEAD(KEYWORD("SEGMENT")) KEYWORD("SEGMENT") | <GROUP> )
-       ( <AFTER> /*IlmTimePeriod()*/ <OF> ( ( <NO> ( LOOKAHEAD(KEYWORD("ACCESS")) KEYWORD("ACCESS")
-                  | LOOKAHEAD(KEYWORD("MODIFICATION")) KEYWORD("MODIFICATION") ) )
-                  | LOOKAHEAD(KEYWORD("CREATION")) KEYWORD("CREATION") )
-       | <ON> <IDENTIFIER> )
-     | LOOKAHEAD(5) <ROW> KEYWORD("STORE") <COMPRESS> KEYWORD("ADVANCED")
-     <ROW> <AFTER> /*IlmTimePeriod()*/ <OF> <NO> KEYWORD("MODIFICATION") )
+     ( LOOKAHEAD(3) TableCompression()
+            ( LOOKAHEAD(KEYWORD("SEGMENT")) KEYWORD("SEGMENT") | <GROUP> )
+            ( <AFTER> IlmTimePeriod() <OF> ( ( <NO> ( LOOKAHEAD(KEYWORD("ACCESS")) KEYWORD("ACCESS")
+                                                    | LOOKAHEAD(KEYWORD("MODIFICATION")) KEYWORD("MODIFICATION") ) )
+                                             | LOOKAHEAD(KEYWORD("CREATION")) KEYWORD("CREATION") )
+            | <ON> <IDENTIFIER> )
+     | LOOKAHEAD(5) <ROW> KEYWORD("STORE") <COMPRESS> KEYWORD("ADVANCED") <ROW> <AFTER> IlmTimePeriod() <OF> <NO> KEYWORD("MODIFICATION") )
 }
 
 void IlmTieringPolicy() #void:
 {}
 {
      LOOKAHEAD(KEYWORD("TIER")) KEYWORD("TIER") <TO> <IDENTIFIER>
-     ( [ LOOKAHEAD(KEYWORD("SEGMENT")) KEYWORD("SEGMENT") | <GROUP> ] [ <ON> <IDENTIFIER> ] )
-     | ( <READ> <ONLY> [ LOOKAHEAD(KEYWORD("SEGMENT")) KEYWORD("SEGMENT") | <GROUP> ]
-       ( <AFTER> /*IlmTimePeriod()*/ <OF> ( ( <NO> ( LOOKAHEAD(KEYWORD("ACCESS")) KEYWORD("ACCESS")
-       | LOOKAHEAD(KEYWORD("MODIFICATION")) KEYWORD("MODIFICATION") ) ) | LOOKAHEAD(KEYWORD("CREATION")) KEYWORD("CREATION") )
-       | <ON> <IDENTIFIER> ) )
+        ( [ LOOKAHEAD(1) ( LOOKAHEAD(KEYWORD("SEGMENT")) KEYWORD("SEGMENT") | <GROUP> ) ]
+          [ <ON> <IDENTIFIER> ] )
+        | ( <READ> <ONLY>
+          [ LOOKAHEAD(KEYWORD("SEGMENT")) KEYWORD("SEGMENT") | <GROUP> ]
+          ( <AFTER> IlmTimePeriod() <OF> ( ( <NO> ( LOOKAHEAD(KEYWORD("ACCESS")) KEYWORD("ACCESS")
+                                                  | LOOKAHEAD(KEYWORD("MODIFICATION")) KEYWORD("MODIFICATION") ) )
+                                           | LOOKAHEAD(KEYWORD("CREATION")) KEYWORD("CREATION") )
+          | <ON> <IDENTIFIER> ) )
+}
+
+void IlmTimePeriod() #void:
+{}
+{
+     NumericLiteral() ( LOOKAHEAD(1) ( <DAY>   | LOOKAHEAD(KEYWORD("DAYS")) KEYWORD("DAYS") )
+                      | LOOKAHEAD(1) ( <MONTH> | LOOKAHEAD(KEYWORD("MONTHS")) KEYWORD("MONTHS") )
+                      | LOOKAHEAD(1) ( <YEAR>  | LOOKAHEAD(KEYWORD("YEARS")) KEYWORD("YEARS") ) )
 }
 
 ASTHeapOrganizedTableClause HeapOrganizedTableClause()  :
@@ -3816,13 +3830,7 @@ ASTExternalTableClause ExternalTableClause()  :
 	  { return jjtThis ; }
 }
 
-/*void IlmTimePeriod() #void:
-{}
-{
-     NumericLiteral() ( ( <DAY> | "DAYS" ) | ( <MONTH> | "MONTHS" ) | ( <YEAR> | "YEARS" ) )
-}
-
-void ExternalDataProperties() #void:
+/*void ExternalDataProperties() #void:
 {}
 {
      <_DEFAULT> <DIRECTORY> <IDENTIFIER> [ "ACCESS" <PARAMETERS> (

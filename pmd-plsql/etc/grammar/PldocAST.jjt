@@ -3897,7 +3897,7 @@ void FieldDefinitions() #void:
      //field_definitions: https://docs.oracle.com/database/121/SUTIL/GUID-B3C6199C-C28C-4FA7-893E-E48C6FB98F52.htm#SUTIL1406
      KEYWORD("FIELDS")
      [ LOOKAHEAD(KEYWORD("IGNORE_CHARS_AFTER_EOR")) KEYWORD("IGNORE_CHARS_AFTER_EOR")]
-     [ LOOKAHEAD(KEYWORD("CSV")) KEYWORD("CSV") [ <WITH> KEYWORD("EMBEDDED") | LOOKAHEAD(KEYWORD("WITHOUT")) KEYWORD("WITHOUT") KEYWORD("EMBEDDED") ] ]
+     [ LOOKAHEAD(KEYWORD("CSV")) KEYWORD("CSV") [ LOOKAHEAD(1) ( <WITH> KEYWORD("EMBEDDED") | LOOKAHEAD(KEYWORD("WITHOUT")) KEYWORD("WITHOUT") KEYWORD("EMBEDDED") ) ] ]
       //[DelimSpec()]
      //[TrimSpec()]
      [ <ALL> KEYWORD("FIELDS") KEYWORD("OVERRIDE") KEYWORD("THESE") KEYWORD("FIELDS") ]
@@ -3936,11 +3936,11 @@ void PosSpecClause() #void:
 void DatatypeSpec() #void:
 {}
 {
-     ( [ LOOKAHEAD(KEYWORD("UNSIGNED")) KEYWORD("UNSIGNED") ] <INTEGER> [ <EXTERNAL> ] [ "(" NumericLiteral() ")" ] //[ DelimSpec() ]
-     | ( <DECIMAL> | LOOKAHEAD(KEYWORD("ZONED")) KEYWORD("ZONED") ) [ <EXTERNAL> [ "(" NumericLiteral() ")" ] //[ DelimSpec() ]
+     ( LOOKAHEAD(1) ( [ LOOKAHEAD(1) KEYWORD("UNSIGNED") ] <INTEGER> [ <EXTERNAL> ] [ "(" NumericLiteral() ")" ] /*[ DelimSpec() ]*/ )
+     | LOOKAHEAD(1) ( <DECIMAL> | LOOKAHEAD(KEYWORD("ZONED")) KEYWORD("ZONED") ) [ <EXTERNAL> [ "(" NumericLiteral() ")" ] //[ DelimSpec() ]
                                | "(" NumericLiteral() [ "," NumericLiteral() ] ")" ]
      | LOOKAHEAD(KEYWORD("ORACLE_DATE")) KEYWORD("ORACLE_DATE")
-     | LOOKAHEAD(KEYWORD("ORACLE_NUMBER")) KEYWORD("ORACLE_NUMBER") [ LOOKAHEAD(KEYWORD("COUNTED")) KEYWORD("COUNTED") ]
+     | LOOKAHEAD(KEYWORD("ORACLE_NUMBER")) KEYWORD("ORACLE_NUMBER") [ LOOKAHEAD(1) KEYWORD("COUNTED") ]
      | <FLOAT> [ <EXTERNAL> ] [ "(" NumericLiteral() ")" ] //[ DelimSpec() ]
      | <DOUBLE>
      | LOOKAHEAD(KEYWORD("BINARY_FLOAT")) KEYWORD("BINARY_FLOAT") [ <EXTERNAL> ] [ "(" NumericLiteral() ")" ] //[ DelimSpec() ]
@@ -3948,12 +3948,12 @@ void DatatypeSpec() #void:
      | <RAW> [ "(" NumericLiteral() ")" ]
      | <CHAR> [ "(" NumericLiteral() ")" ] //[ DelimSpec() ] [ TrimSpec() ]
                  //DateFormatSpec()
-                 [ [ LOOKAHEAD(KEYWORD("DATE_FORMAT")) KEYWORD("DATE_FORMAT") ]
+                 [ LOOKAHEAD(1) [ LOOKAHEAD(1) KEYWORD("DATE_FORMAT") ]
                  ( ( <DATE>
                  | <TIME> [ <WITH> ( <TIME> <ZONE> | LOOKAHEAD(KEYWORD("TIMEZONE")) KEYWORD("TIMEZONE") ) ]
                  | <TIMESTAMP> [ <WITH> [<LOCAL>] ( <TIME> <ZONE> | LOOKAHEAD(KEYWORD("TIMEZONE")) KEYWORD("TIMEZONE") ) ] ) KEYWORD("MASK") <QUOTED_LITERAL>
                  | <INTERVAL> ( LOOKAHEAD(KEYWORD("YEAR_TO_MONTH")) KEYWORD("YEAR_TO_MONTH") | LOOKAHEAD(KEYWORD("DAY_TO_SECOND")) KEYWORD("DAY_TO_SECOND") ) ) ]
-     | ( <VARCHAR> | LOOKAHEAD(KEYWORD("VARRAW")) KEYWORD("VARRAW") | LOOKAHEAD(KEYWORD("VARCHARC")) KEYWORD("VARCHARC") | LOOKAHEAD(KEYWORD("VARRAWC")) KEYWORD("VARRAWC") ) "(" [ NumericLiteral() "," ] NumericLiteral() ")"
+     | ( <VARCHAR> | LOOKAHEAD(KEYWORD("VARRAW")) KEYWORD("VARRAW") | LOOKAHEAD(KEYWORD("VARCHARC")) KEYWORD("VARCHARC") | LOOKAHEAD(KEYWORD("VARRAWC")) KEYWORD("VARRAWC") ) "(" [ LOOKAHEAD(1) NumericLiteral() "," ] NumericLiteral() ")"
      )
 }
 

@@ -3839,7 +3839,7 @@ void ExternalDataProperties() #void:
           [ LOOKAHEAD(1) RecordFormatInfoClause() ]
           [ LOOKAHEAD(1) FieldDefinitions() ]
           //column_transforms
-          [ <COLUMN> KEYWORD("TRANSFORMS") "(" Transform() ("," Transform())* ")" ]
+          [ <COLUMN> KEYWORD("TRANSFORMS") /*"(" Transform() ("," Transform())* ")"*/ ]
      ")"
      | <USING> <CLOB> Subquery() ) ]
      KEYWORD("LOCATION") "(" [ <IDENTIFIER> ":" ] StringLiteral() ("," [ <IDENTIFIER> ":" ] StringLiteral())* ")"
@@ -3883,12 +3883,8 @@ void EtRecordSpecOptions() #void:
 void EtOutputFiles() #void:
 {}
 {
-    ( LOOKAHEAD(2) ( LOOKAHEAD(KEYWORD("NOBADFILE"))     KEYWORD("NOBADFILE")
-                   | LOOKAHEAD(KEYWORD("BADFILE"))       KEYWORD("BADFILE")     [ <IDENTIFIER> ":" ] StringLiteral() )
-    | LOOKAHEAD(2) ( LOOKAHEAD(KEYWORD("NODISCARDFILE")) KEYWORD("NODISCARDFILE")
-                   | LOOKAHEAD(KEYWORD("DISCARDFILE"))   KEYWORD("DISCARDFILE") [ <IDENTIFIER> ":" ] StringLiteral() )
-    | LOOKAHEAD(2) ( LOOKAHEAD(KEYWORD("NOLOGFILE"))     KEYWORD("NOLOGFILE")
-                   | LOOKAHEAD(KEYWORD("LOGFILE"))       KEYWORD("LOGFILE")     [ <IDENTIFIER> ":" ] StringLiteral() ) )
+     ( ( <NOBADFILE> | <NODISCARDFILE> | <NOLOGFILE> )
+     | ( <BADFILE> | <DISCARDFILE> | <LOGFILE> ) [ <IDENTIFIER> ":" ] StringLiteral() )
 }
 
 void FieldDefinitions() #void:
@@ -5151,6 +5147,8 @@ TOKEN [IGNORE_CASE]:
 <SEGMENT: "SEGMENT">|
 <CREATION: "CREATION">|
 <DEFERRED: "DEFERRED">|
+<NOBADFILE: "NOBADFILE"> | <NODISCARDFILE: "NODISCARDFILE"> | <NOLOGFILE: "NOLOGFILE"> |
+<BADFILE: "BADFILE"> | <DISCARDFILE: "DISCARDFILE"> | <LOGFILE: "LOGFILE"> |
 /*<BASIC: "BASIC">|
 <ADVANCED: "ADVANCED">|
 <STORE: "STORE">|
@@ -5525,6 +5523,7 @@ ASTKEYWORD_UNRESERVED KEYWORD_UNRESERVED (): {}
 //| <AUTOEXTEND>
 //| <AUTOMATIC>
 //| <AVAILABILITY>
+| <BADFILE>
 //| <BACKUP>
 //|<BASIC>
 //| <BATCH>
@@ -5691,6 +5690,7 @@ ASTKEYWORD_UNRESERVED KEYWORD_UNRESERVED (): {}
 | <DISABLE>
 //| <DISABLE_RPKE>
 | <DISASSOCIATE>
+| <DISCARDFILE>
 | <DISCONNECT>
 //| <DISK>
 //| <DISKGROUP>
@@ -5916,7 +5916,7 @@ ASTKEYWORD_UNRESERVED KEYWORD_UNRESERVED (): {}
 //| <LOCATOR>
 //| <LOCKED>
 //|<LOCKING>
-//| <LOGFILE>
+| <LOGFILE>
 | <LOGGING>
 //| <LOGICAL>
 //| <LOGICAL_READS_PER_CALL>
@@ -6077,12 +6077,15 @@ ASTKEYWORD_UNRESERVED KEYWORD_UNRESERVED (): {}
 //| <NOAPPEND>
 //| <NOARCHIVELOG>
 | <NOAUDIT>
+| <NOBADFILE>
 //| <NOCACHE>
 //| <NOCPU_COSTING>
 | <NOCYCLE>
 //| <NODELAY>
+| <NODISCARDFILE>
 //| <NOFORCE>
 //| <NOGUARANTEE>
+| <NOLOGFILE>
 | <NOLOGGING>
 | <NOMAPPING>
 //| <NOMAXVALUE>

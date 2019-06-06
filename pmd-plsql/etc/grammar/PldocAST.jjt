@@ -3898,8 +3898,8 @@ void FieldDefinitions() #void:
      KEYWORD("FIELDS")
      [ LOOKAHEAD(KEYWORD("IGNORE_CHARS_AFTER_EOR")) KEYWORD("IGNORE_CHARS_AFTER_EOR")]
      [ LOOKAHEAD(KEYWORD("CSV")) KEYWORD("CSV") [ LOOKAHEAD(1) ( <WITH> KEYWORD("EMBEDDED") | LOOKAHEAD(KEYWORD("WITHOUT")) KEYWORD("WITHOUT") KEYWORD("EMBEDDED") ) ] ]
-      //[DelimSpec()]
-     //[TrimSpec()]
+     [DelimSpec()]
+     [TrimSpec()]
      [ <ALL> KEYWORD("FIELDS") KEYWORD("OVERRIDE") KEYWORD("THESE") KEYWORD("FIELDS") ]
      [ LOOKAHEAD(KEYWORD("MISSING")) KEYWORD("MISSING") KEYWORD("FIELD") <VALUES> KEYWORD("ARE") <NULL> ]
      [ LOOKAHEAD(KEYWORD("REJECT")) KEYWORD("REJECT") <ROWS> <WITH> <ALL> <NULL> KEYWORD("FIELDS") ]
@@ -3912,19 +3912,23 @@ void FieldDefinitions() #void:
      ")" ]
 }
 
-/*void DelimSpec() #void:
+void DelimSpec() #void:
 {}
 {
-     ( "ENCLOSED" <BY> ( <QUOTED_LITERAL> | <CHARACTER_LITERAL> ) [ <AND> ( <QUOTED_LITERAL> | <CHARACTER_LITERAL> ) ]
-     | "TERMINATED" <BY> ( ( <QUOTED_LITERAL> | <CHARACTER_LITERAL> ) | "WHITESPACE" ) [ [ "OPTIONALLY" ]
-       "ENCLOSED" <BY> ( <QUOTED_LITERAL> | <CHARACTER_LITERAL> ) [ <AND> ( <QUOTED_LITERAL> | <CHARACTER_LITERAL> ) ] ] )
+     ( LOOKAHEAD(KEYWORD("ENCLOSED")) KEYWORD("ENCLOSED")     <BY> ( <QUOTED_LITERAL> | <CHARACTER_LITERAL> ) [ <AND> ( <QUOTED_LITERAL> | <CHARACTER_LITERAL> ) ]
+     | LOOKAHEAD(KEYWORD("TERMINATED")) KEYWORD("TERMINATED") <BY> ( ( <QUOTED_LITERAL> | <CHARACTER_LITERAL> ) | LOOKAHEAD(KEYWORD("WHITESPACE")) KEYWORD("WHITESPACE") ) [ [ LOOKAHEAD(KEYWORD("OPTIONALLY")) KEYWORD("OPTIONALLY") ]
+       LOOKAHEAD(KEYWORD("ENCLOSED")) KEYWORD("ENCLOSED")     <BY> ( <QUOTED_LITERAL> | <CHARACTER_LITERAL> ) [ <AND> ( <QUOTED_LITERAL> | <CHARACTER_LITERAL> ) ] ] )
 }
 
 void TrimSpec() #void:
 {}
 {
-     ( "LRTRIM" | "NOTRIM" | "LTRIM" | "RTRIM" | "LDRTRIM" )
-}*/
+     ( LOOKAHEAD(KEYWORD("LRTRIM"))  KEYWORD("LRTRIM")
+     | LOOKAHEAD(KEYWORD("NOTRIM"))  KEYWORD("NOTRIM")
+     | LOOKAHEAD(KEYWORD("LTRIM"))   KEYWORD("LTRIM")
+     | LOOKAHEAD(KEYWORD("RTRIM"))   KEYWORD("RTRIM")
+     | LOOKAHEAD(KEYWORD("LDRTRIM")) KEYWORD("LDRTRIM") )
+}
 
 void PosSpecClause() #void:
 {}
@@ -3936,17 +3940,17 @@ void PosSpecClause() #void:
 void DatatypeSpec() #void:
 {}
 {
-     ( LOOKAHEAD(1) ( [ LOOKAHEAD(1) KEYWORD("UNSIGNED") ] <INTEGER> [ <EXTERNAL> ] [ "(" NumericLiteral() ")" ] /*[ DelimSpec() ]*/ )
-     | LOOKAHEAD(1) ( <DECIMAL> | LOOKAHEAD(KEYWORD("ZONED")) KEYWORD("ZONED") ) [ <EXTERNAL> [ "(" NumericLiteral() ")" ] //[ DelimSpec() ]
+     ( LOOKAHEAD(1) ( [ LOOKAHEAD(1) KEYWORD("UNSIGNED") ] <INTEGER> [ <EXTERNAL> ] [ "(" NumericLiteral() ")" ] [ DelimSpec() ] )
+     | LOOKAHEAD(1) ( <DECIMAL> | LOOKAHEAD(KEYWORD("ZONED")) KEYWORD("ZONED") ) [ <EXTERNAL> [ "(" NumericLiteral() ")" ] [ DelimSpec() ]
                                | "(" NumericLiteral() [ "," NumericLiteral() ] ")" ]
      | LOOKAHEAD(KEYWORD("ORACLE_DATE")) KEYWORD("ORACLE_DATE")
      | LOOKAHEAD(KEYWORD("ORACLE_NUMBER")) KEYWORD("ORACLE_NUMBER") [ LOOKAHEAD(1) KEYWORD("COUNTED") ]
-     | <FLOAT> [ <EXTERNAL> ] [ "(" NumericLiteral() ")" ] //[ DelimSpec() ]
+     | <FLOAT> [ <EXTERNAL> ] [ "(" NumericLiteral() ")" ] [ DelimSpec() ]
      | <DOUBLE>
-     | LOOKAHEAD(KEYWORD("BINARY_FLOAT")) KEYWORD("BINARY_FLOAT") [ <EXTERNAL> ] [ "(" NumericLiteral() ")" ] //[ DelimSpec() ]
+     | LOOKAHEAD(KEYWORD("BINARY_FLOAT")) KEYWORD("BINARY_FLOAT") [ <EXTERNAL> ] [ "(" NumericLiteral() ")" ] [ DelimSpec() ]
      | LOOKAHEAD(KEYWORD("BINARY_DOUBLE")) KEYWORD("BINARY_DOUBLE")
      | <RAW> [ "(" NumericLiteral() ")" ]
-     | <CHAR> [ "(" NumericLiteral() ")" ] //[ DelimSpec() ] [ TrimSpec() ]
+     | <CHAR> [ "(" NumericLiteral() ")" ] [ DelimSpec() ] [ TrimSpec() ]
                  //DateFormatSpec()
                  [ LOOKAHEAD(1) [ LOOKAHEAD(1) KEYWORD("DATE_FORMAT") ]
                  ( ( <DATE>

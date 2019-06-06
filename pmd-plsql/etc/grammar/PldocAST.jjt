@@ -3894,15 +3894,21 @@ void EtOutputFiles() #void:
 void FieldDefinitions() #void:
 {}
 {
+     //field_definitions: https://docs.oracle.com/database/121/SUTIL/GUID-B3C6199C-C28C-4FA7-893E-E48C6FB98F52.htm#SUTIL1406
      KEYWORD("FIELDS")
-     //[DelimSpec()]
+     [ LOOKAHEAD(KEYWORD("IGNORE_CHARS_AFTER_EOR")) KEYWORD("IGNORE_CHARS_AFTER_EOR")]
+     [ LOOKAHEAD(KEYWORD("CSV")) KEYWORD("CSV") [ <WITH> KEYWORD("EMBEDDED") | LOOKAHEAD(KEYWORD("WITHOUT")) KEYWORD("WITHOUT") KEYWORD("EMBEDDED") ] ]
+      //[DelimSpec()]
      //[TrimSpec()]
+     [ <ALL> KEYWORD("FIELDS") KEYWORD("OVERRIDE") KEYWORD("THESE") KEYWORD("FIELDS") ]
      [ LOOKAHEAD(KEYWORD("MISSING")) KEYWORD("MISSING") KEYWORD("FIELD") <VALUES> KEYWORD("ARE") <NULL> ]
      [ LOOKAHEAD(KEYWORD("REJECT")) KEYWORD("REJECT") <ROWS> <WITH> <ALL> <NULL> KEYWORD("FIELDS") ]
+     [ <DATE> KEYWORD("FORMAT") ( <DATE> | <TIMESTAMP> ) KEYWORD("MASK") StringLiteral() ]
+     [ <NULLIF> | LOOKAHEAD(KEYWORD("NONULLIF")) KEYWORD("NONULLIF") ]
      //field_list
      [ "("
-     <IDENTIFIER> [ PosSpecClause() ] [ DatatypeSpec() ] [ ( LOOKAHEAD(KEYWORD("DEFAULTIF")) KEYWORD("DEFAULTIF") | <NULLIF> ) Condition() ]
-     (","  (<IDENTIFIER> [ PosSpecClause() ] [ DatatypeSpec() ] [ ( LOOKAHEAD(KEYWORD("DEFAULTIF")) KEYWORD("DEFAULTIF") | <NULLIF> ) Condition() ] ) )*
+     <IDENTIFIER> [ LOOKAHEAD(2) PosSpecClause() ] [ LOOKAHEAD(2) DatatypeSpec() ] [ ( LOOKAHEAD(KEYWORD("DEFAULTIF")) KEYWORD("DEFAULTIF") | <NULLIF> ) Condition() ]
+     (","  (<IDENTIFIER> [ LOOKAHEAD(2) PosSpecClause() ] [ LOOKAHEAD(2) DatatypeSpec() ] [ ( LOOKAHEAD(KEYWORD("DEFAULTIF")) KEYWORD("DEFAULTIF") | <NULLIF> ) Condition() ] ) )*
      ")" ]
 }
 

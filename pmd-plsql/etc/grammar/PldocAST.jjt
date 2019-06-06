@@ -3839,7 +3839,7 @@ void ExternalDataProperties() #void:
           [ LOOKAHEAD(1) RecordFormatInfoClause() ]
           [ LOOKAHEAD(1) FieldDefinitions() ]
           //column_transforms
-          [ <COLUMN> KEYWORD("TRANSFORMS") /*"(" Transform() ("," Transform())* ")"*/ ]
+          [ <COLUMN> KEYWORD("TRANSFORMS") "(" Transform() ("," Transform())* ")" ]
      ")"
      | <USING> <CLOB> Subquery() ) ]
      KEYWORD("LOCATION") "(" [ <IDENTIFIER> ":" ] StringLiteral() ("," [ <IDENTIFIER> ":" ] StringLiteral())* ")"

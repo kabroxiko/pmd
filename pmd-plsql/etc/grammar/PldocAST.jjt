@@ -3837,7 +3837,7 @@ void ExternalDataProperties() #void:
      "("
           //access_parameters: https://docs.oracle.com/database/121/SUTIL/GUID-00393686-44CB-4A4D-BD2C-C4AD174DACA5.htm#SUTIL1379
           [ LOOKAHEAD(1) RecordFormatInfoClause() ]
-          [ FieldDefinitions() ]
+          [ LOOKAHEAD(1) FieldDefinitions() ]
           //column_transforms
           [ <COLUMN> KEYWORD("TRANSFORMS") /*"(" Transform() ("," Transform())* ")"*/ ]
      ")"
@@ -3961,18 +3961,18 @@ void DatatypeSpec() #void:
      )
 }
 
-/*void Transform() #void:
+void Transform() #void:
 {}
 {
      <IDENTIFIER> <FROM>
      ( <NULL>
      | <CONSTANT> StringLiteral()
-     | "CONCAT" "(" ( <IDENTIFIER> | <CONSTANT> StringLiteral() ) ( "," ( <IDENTIFIER> | <CONSTANT> StringLiteral() ) )* ")"
-     | "LOBFILE" "(" ( <IDENTIFIER> | <CONSTANT> StringLiteral() ":" ) ( "," ( <IDENTIFIER> | <CONSTANT> StringLiteral() ":" ) )* ")"
+     | LOOKAHEAD(KEYWORD("CONCAT")) KEYWORD("CONCAT") "(" ( <IDENTIFIER> | <CONSTANT> StringLiteral() ) ( "," ( <IDENTIFIER> | <CONSTANT> StringLiteral() ) )* ")"
+     | LOOKAHEAD(KEYWORD("LOBFILE")) KEYWORD("LOBFILE") "(" ( <IDENTIFIER> | <CONSTANT> StringLiteral() ":" ) ( "," ( <IDENTIFIER> | <CONSTANT> StringLiteral() ":" ) )* ")"
      //lobfile_attr_list
-     (<FROM> "(" <IDENTIFIER> ( "," <IDENTIFIER> )* ")" | <CLOB> | <BLOB> | "CHARACTERSET" "=" <IDENTIFIER> )*
+     (<FROM> "(" <IDENTIFIER> ( "," <IDENTIFIER> )* ")" | <CLOB> | <BLOB> | LOOKAHEAD(KEYWORD("CHARACTERSET")) KEYWORD("CHARACTERSET") "=" <IDENTIFIER> )*
      )
-}*/
+}
 
 ASTTableColumn TableColumn()  :
 {

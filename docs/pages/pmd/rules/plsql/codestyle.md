@@ -116,6 +116,7 @@ END;
 |Name|Default Value|Description|Multivalued|
 |----|-------------|-----------|-----------|
 |indentation|2|Indentation to be used for blocks|no|
+|queryAlignment|Indent|Indentation of the query keywords. Possible values: \\\[Left, Indent\\\]|no|
 
 **Use this rule with the default properties by just referencing it:**
 ``` xml
@@ -127,6 +128,7 @@ END;
 <rule ref="category/plsql/codestyle.xml/CodeFormat">
     <properties>
         <property name="indentation" value="2" />
+        <property name="queryAlignment" value="Indent" />
     </properties>
 </rule>
 ```

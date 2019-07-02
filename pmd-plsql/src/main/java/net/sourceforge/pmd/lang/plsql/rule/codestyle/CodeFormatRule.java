@@ -6,7 +6,10 @@ package net.sourceforge.pmd.lang.plsql.rule.codestyle;
 
 import static net.sourceforge.pmd.properties.constraints.NumericConstraints.inRange;
 
+import java.util.ArrayList;
 import java.util.List;
+
+import org.jaxen.JaxenException;
 
 import net.sourceforge.pmd.lang.ast.Node;
 import net.sourceforge.pmd.lang.plsql.ast.ASTArgument;
@@ -19,10 +22,17 @@ import net.sourceforge.pmd.lang.plsql.ast.ASTFormalParameter;
 import net.sourceforge.pmd.lang.plsql.ast.ASTFormalParameters;
 import net.sourceforge.pmd.lang.plsql.ast.ASTFromClause;
 import net.sourceforge.pmd.lang.plsql.ast.ASTInput;
+import net.sourceforge.pmd.lang.plsql.ast.ASTIntoClause;
 import net.sourceforge.pmd.lang.plsql.ast.ASTJoinClause;
+import net.sourceforge.pmd.lang.plsql.ast.ASTQueryBlock;
+import net.sourceforge.pmd.lang.plsql.ast.ASTSelectIntoStatement;
 import net.sourceforge.pmd.lang.plsql.ast.ASTSelectList;
+import net.sourceforge.pmd.lang.plsql.ast.ASTSelectStatement;
 import net.sourceforge.pmd.lang.plsql.ast.ASTSubqueryOperation;
+import net.sourceforge.pmd.lang.plsql.ast.ASTTableName;
+import net.sourceforge.pmd.lang.plsql.ast.ASTTableReference;
 import net.sourceforge.pmd.lang.plsql.ast.ASTUnqualifiedID;
+import net.sourceforge.pmd.lang.plsql.ast.ASTVariableName;
 import net.sourceforge.pmd.lang.plsql.ast.ASTVariableOrConstantDeclarator;
 import net.sourceforge.pmd.lang.plsql.rule.AbstractPLSQLRule;
 import net.sourceforge.pmd.properties.PropertyDescriptor;
@@ -32,18 +42,31 @@ import net.sourceforge.pmd.properties.PropertyFactory;
 public class CodeFormatRule extends AbstractPLSQLRule {
 
     private static final PropertyDescriptor<Integer> INDENTATION_PROPERTY = PropertyFactory.intProperty("indentation")
-                                                                                           .desc("Indentation to be used for blocks").defaultValue(2).require(inRange(0, 32)).build();
+            .desc("Indentation to be used for blocks").defaultValue(2).require(inRange(0, 32)).build();
+    private static final PropertyDescriptor<String> QUERY_ALIGNMENT = PropertyFactory.stringProperty("queryAlignment")
+            .desc("Indentation of the query keywords. Possible values: \\[Left, Indent\\]").defaultValue("Indent").build();
 
     private int indentation = INDENTATION_PROPERTY.defaultValue();
+    private String queryAlignment = QUERY_ALIGNMENT.defaultValue();
 
     public CodeFormatRule() {
         definePropertyDescriptor(INDENTATION_PROPERTY);
+        definePropertyDescriptor(QUERY_ALIGNMENT);
     }
 
     @Override
     public Object visit(ASTInput node, Object data) {
         indentation = getProperty(INDENTATION_PROPERTY);
+        queryAlignment = getProperty(QUERY_ALIGNMENT);
         return super.visit(node, data);
+    }
+
+    private static <T> List<T> convertList(List<Node> nodes, Class<T> target) {
+        List<T> converted = new ArrayList<>();
+        for (Node n : nodes) {
+            converted.add(target.cast(n));
+        }
+        return converted;
     }
 
     @Override
@@ -55,15 +78,58 @@ public class CodeFormatRule extends AbstractPLSQLRule {
 
     @Override
     public Object visit(ASTBulkCollectIntoClause node, Object data) {
-        Node parent = node.jjtGetParent();
-        checkIndentation(data, node, parent.getBeginColumn() + indentation, "BULK COLLECT INTO");
-        checkEachChildOnNextLine(data, node, node.getBeginLine(), parent.getBeginColumn() + 7);
+        if ("Indent".equals(queryAlignment)) {
+            Node parent = node.jjtGetParent();
+            checkIndentation(data, node, parent.getBeginColumn() + indentation, "BULK COLLECT INTO");
+            checkEachChildOnNextLine(data, node, node.getBeginLine(), parent.getBeginColumn() + 7);
+        }
+        return super.visit(node, data);
+    }
+
+    @Override
+    public Object visit(ASTIntoClause node, Object data) {
+        if ("Left".equals(queryAlignment)) {
+            checkIndentation(data, node, node.jjtGetParent().getBeginColumn(), "INTO");
+            List<ASTVariableName> variableNames = node.findDescendantsOfType(ASTVariableName.class);
+            for (ASTVariableName variableName : variableNames) {
+                checkIndentation(data, variableName, node.getBeginColumn() + 7, variableName.getImage());
+            }
+        }
         return super.visit(node, data);
     }
 
     @Override
     public Object visit(ASTFromClause node, Object data) {
-        checkIndentation(data, node, node.jjtGetParent().getBeginColumn() + indentation, "FROM");
+        if ("Left".equals(queryAlignment)) {
+            Node parent = node.getFirstParentOfAnyType(ASTSelectStatement.class, ASTSelectIntoStatement.class, ASTQueryBlock.class);
+            if (parent != null) {
+                Node previousClause = parent.getFirstDescendantOfType(ASTIntoClause.class);
+                if (previousClause == null) {
+                    previousClause = parent.getFirstDescendantOfType(ASTBulkCollectIntoClause.class);
+                }
+                if (previousClause == null) {
+                    previousClause = parent.getFirstDescendantOfType(ASTSelectList.class);
+                }
+                checkLineAndIndentation(data, node, previousClause.getEndLine() + 1, node.jjtGetParent().getBeginColumn(), "FROM");
+            }
+            try {
+                List<ASTTableReference> tableReferences = convertList(node.findChildNodesWithXPath("TableReference"), ASTTableReference.class);
+                for (ASTTableReference tableReference : tableReferences) {
+                    ASTTableName tableName = tableReference.getFirstChildOfType(ASTTableName.class);
+                    if (tableName != null) {
+                        checkIndentation(data, tableReference, node.getBeginColumn() + 7, tableName.getImage() + " table reference");
+                    }
+                    List<ASTQueryBlock> queryBlocks = convertList(tableReference.findChildNodesWithXPath("QueryBlock"), ASTQueryBlock.class);
+                    for (ASTQueryBlock queryBlock : queryBlocks) {
+                        checkIndentation(data, queryBlock, node.getBeginColumn() + 8, "Subquery");
+                    }
+                }
+            } catch (JaxenException e) {
+                return false;
+            }
+        } else if ("Indent".equals(queryAlignment)) {
+            checkIndentation(data, node, node.jjtGetParent().getBeginColumn() + indentation, "FROM");
+        }
         return super.visit(node, data);
     }
 

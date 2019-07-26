@@ -8,6 +8,8 @@
 package net.sourceforge.pmd.lang.plsql.ast;
 
 public class ASTMethodDeclarator extends net.sourceforge.pmd.lang.plsql.ast.AbstractPLSQLNode {
+    private String type;
+
     public ASTMethodDeclarator(int id) {
         super(id);
     }
@@ -24,6 +26,14 @@ public class ASTMethodDeclarator extends net.sourceforge.pmd.lang.plsql.ast.Abst
 
     public int getParameterCount() {
         return this.jjtGetChild(0).jjtGetNumChildren();
+    }
+
+    public String getType() {
+        return type;
+    }
+
+    void setType(String type) {
+        this.type = type;
     }
 }
 /*

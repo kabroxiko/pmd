@@ -378,7 +378,7 @@ ASTBlock Block()  :
 
     <BEGIN>
     (Statement())*
-    (ExceptionHandler())?
+    (ExceptionHandlersBegin())?
     <END> [ <IDENTIFIER> ] // Optional END Identifier has to match the label
     { return jjtThis ; }
 }
@@ -436,7 +436,7 @@ ASTPackageBody PackageBody()  :
 	    DeclarativeSection() //SRT 20110524 Allow PLDOc in Type Bodies
 
 
-	  [ <BEGIN> (Statement())* (ExceptionHandler())? ] <END> [ID()] ";"
+	  [ <BEGIN> (Statement())* (ExceptionHandlersBegin())? ] <END> [ID()] ";"
 
 	  )
 	)
@@ -561,7 +561,7 @@ ASTProgramUnit ProgramUnit()  :
 				DeclarativeSection()
 				<BEGIN>
 				[Pragma()] // See PMD Bug #1527
-				(Statement())* (ExceptionHandler())? <END> [ID()]
+				(Statement())* (ExceptionHandlersBegin())? <END> [ID()]
 			)
 		)
 	]
@@ -587,16 +587,35 @@ ASTFormalParameter FormalParameter()  :
 }
 {
    (
-	simpleNode = ID()
-	// the order of outer "|" is important !
-	( LOOKAHEAD(2) ( LOOKAHEAD(2) ( (<OUT>|(<IN> <OUT>)) (LOOKAHEAD(2) <NOCOPY>  )? ) | <IN> ) )?
-	("..."    | Datatype())
-	( (":" "="|<_DEFAULT>) Expression() )?
+	simpleNode = ParameterName()
+	simpleNode = ParameterType()
    )
    { jjtThis.setImage(simpleNode.getImage()) ;  return jjtThis ; }
 }
 
+ASTParameterType ParameterType()  :
+{
+ PLSQLNode simpleNode = null ;
+}
+{
+   (
+	// the order of outer "|" is important !
+	( LOOKAHEAD(2) ( LOOKAHEAD(2) ( (<OUT> {jjtThis.setType(token.getImage()); }|(<IN> <OUT>) {jjtThis.setType("IN OUT"); })
+         (LOOKAHEAD(2) <NOCOPY>  )? ) | <IN> {jjtThis.setType(token.getImage()); }) )?
+	("..."    | Datatype())
+	( (":" "="|<_DEFAULT>) Expression() )?
+   )
+   { return jjtThis ; }
+}
 
+ASTParameterName ParameterName()  :
+{
+ PLSQLNode simpleNode = null ;
+}
+{
+   simpleNode = ID()
+   { jjtThis.setImage(simpleNode.getImage()) ;  return jjtThis ; }
+}
 
 ASTMethodDeclaration MethodDeclaration() :
 {}
@@ -615,7 +634,7 @@ ASTMethodDeclarator MethodDeclarator() :
  PLSQLNode simpleNode = null ;
 }
 {
-  ( <FUNCTION>
+  ( <FUNCTION> { jjtThis.setType(token.getImage()); }
     simpleNode = ObjectNameDeclaration()
     (
       [ FormalParameters() ]
@@ -639,7 +658,7 @@ ASTMethodDeclarator MethodDeclarator() :
       [ <RETURN> Datatype() ]
 
     )
-  | <PROCEDURE>
+  | <PROCEDURE> { jjtThis.setType(token.getImage()); }
     simpleNode = ObjectNameDeclaration()
     (
       [ FormalParameters() ]
@@ -973,15 +992,29 @@ ASTDateTimeLiteral DateTimeLiteral() :
    }
 }
 
-ASTExceptionHandler ExceptionHandler() :
+ASTExceptionHandlersBegin ExceptionHandlersBegin() :
 {}
 {
       (
 	<EXCEPTION>
-		( LOOKAHEAD(2) <WHEN> QualifiedName() (<OR> QualifiedName())* <THEN> (Statement())+ )*
-		[ <WHEN> <OTHERS> <THEN> (Statement())+ ]
+	    ( LOOKAHEAD(2) ExceptionHandler() )*
+		[ ExceptionWhenOthersHandler() ]
       )
       { return jjtThis ; }
+}
+
+ASTExceptionHandler ExceptionHandler() :
+{}
+{
+		<WHEN> QualifiedName() (<OR> QualifiedName())* <THEN> (Statement())+
+  { return jjtThis ; }
+}
+
+ASTExceptionHandler ExceptionWhenOthersHandler() #ExceptionHandler :
+{}
+{
+		<WHEN> <OTHERS> <THEN> (Statement())+
+  { return jjtThis ; }
 }
 
 void Skip2NextTerminator(String initiator,String terminator) :
@@ -1444,15 +1477,22 @@ ASTCompoundCondition CompoundCondition() :
 {}
 {
  (
-   LOOKAHEAD(1) <NOT> { jjtThis.setType(token.getImage()); } Condition()
+   LOOKAHEAD(1) <NOT> Condition()
  |
    // this might be a expression list
-   LOOKAHEAD("(" SqlExpression() ",") Condition2() (LOOKAHEAD(2) ( <AND> | <OR> ) { jjtThis.setType(token.getImage()); } Condition() )*
+   LOOKAHEAD("(" SqlExpression() ",") Condition2() (LOOKAHEAD(2) NextCondition() )*
  |
-   LOOKAHEAD(1) "(" Condition() ")" (LOOKAHEAD(2) ( <AND> | <OR> ) { jjtThis.setType(token.getImage()); } Condition() )*
+   LOOKAHEAD(1) "(" Condition() ")" (LOOKAHEAD(2) NextCondition() )*
  |
-    Condition2() (LOOKAHEAD(2) ( <AND> | <OR> ) { jjtThis.setType(token.getImage()); } Condition() )*
+    Condition2() (LOOKAHEAD(2) NextCondition() )*
  )
+    { return jjtThis; }
+}
+
+ASTNextCondition NextCondition() :
+{}
+{
+    ( <AND> | <OR> ) { jjtThis.setType(token.getImage()); } Condition()
     { return jjtThis; }
 }
 
@@ -2797,7 +2837,8 @@ ASTCursorUnit CursorUnit()  :
 	[<RETURN> Datatype()
 	]
 	)
-	[<IS> ("(")* SqlStatement(null,";")] ";"
+	// Correct null pointer exception when checking indent
+	[<IS> SelectStatement()] ";"
       { jjtThis.setImage(simpleNode.getImage()) ;  return jjtThis ; }
 }
 
@@ -2898,11 +2939,38 @@ ASTCaseExpression CaseExpression() :
 {}
 {
 	<CASE>
-	   ( Expression() ( <WHEN> Expression() <THEN> Expression() )+
-	   |              ( <WHEN> Condition()  <THEN> Expression() )+ )
-	   [ <ELSE>  Expression() ]
+	   ( Expression() ( SimpleCaseExpression() )+
+	   |              ( SearchedCaseExpression() )+ )
+	   [ ElseCaseExpression() ]
 	<END>
     { return jjtThis; }
+}
+
+ASTSimpleCaseExpression SimpleCaseExpression() :
+{}
+{
+    <WHEN> Expression() <THEN> Expression()
+ {
+ return jjtThis;
+ }
+}
+
+ASTSearchedCaseExpression SearchedCaseExpression() :
+{}
+{
+    <WHEN> Condition() <THEN> Expression()
+ {
+ return jjtThis;
+ }
+}
+
+ASTElseCaseExpression ElseCaseExpression() :
+{}
+{
+    <ELSE>  Expression()
+ {
+ return jjtThis;
+ }
 }
 
 /*
@@ -3900,7 +3968,7 @@ ASTTypeMethod TypeMethod()  :
 		  | // SRT 20110524 Not really a Declaration any more ...
 		  (
 			DeclarativeSection()
-			 <BEGIN> (Statement())* (ExceptionHandler())?  <END> [ID()]
+			 <BEGIN> (Statement())* (ExceptionHandlersBegin())?  <END> [ID()]
 			 ";" // This only exists in the type body
 		  )
 		)
@@ -4174,7 +4242,7 @@ ASTTypeBody TypeBody()  :
 
 		    DeclarativeSection() //SRT 20110524 Allow PLDOc in Type Bodies
 
-	    [ <BEGIN> (Statement())* (ExceptionHandler())? ] <END> [ID()] ";"
+	    [ <BEGIN> (Statement())* (ExceptionHandlersBegin())? ] <END> [ID()] ";"
 	  )
 	)
 }
@@ -4356,6 +4424,20 @@ ASTTriggerUnit TriggerUnit()  :
       { jjtThis.setImage(simpleNode.getImage()) ;  return jjtThis ; }
 }
 
+ASTSequence Sequence()  :
+{
+ PLSQLNode simpleNode = null ;
+}
+{
+  <CREATE> <SEQUENCE> simpleNode = ObjectNameDeclaration()
+           <MINVALUE> <UNSIGNED_NUMERIC_LITERAL>
+           <MAXVALUE> <UNSIGNED_NUMERIC_LITERAL>
+           <START> <WITH> <UNSIGNED_NUMERIC_LITERAL>
+           <INCREMENT> <BY> <UNSIGNED_NUMERIC_LITERAL>
+           [<CACHE> <UNSIGNED_NUMERIC_LITERAL>|<NOCACHE>]
+           ";"
+  { jjtThis.setImage(simpleNode.getImage()) ;  return jjtThis ; }
+}
 
 ASTTriggerTimingPointSection TriggerTimingPointSection()  :
 {
@@ -4665,6 +4747,12 @@ TOKEN [IGNORE_CASE]:
  */
 TOKEN [IGNORE_CASE]:
 {
+<SEQUENCE:"SEQUENCE"> |
+<MINVALUE:"MINVALUE"> |
+<MAXVALUE:"MAXVALUE"> |
+<INCREMENT:"INCREMENT"> |
+<CACHE:"CACHE"> |
+<NOCACHE:"NOCACHE"> |
 <ADD: "ADD"> |
 <AGGREGATE: "AGGREGATE"> |
 <APPLY: "APPLY"> |
@@ -5290,7 +5378,7 @@ ASTKEYWORD_UNRESERVED KEYWORD_UNRESERVED (): {}
 //| <BYPASS_UJVC>
 //| <BY> // RESERVED WORD !!!
 | <BYTE>//test_unreserved_keyword.pks
-//| <CACHE>
+| <CACHE>
 //| <CACHE_CB>
 //| <CACHE_INSTANCES>
 //| <CACHE_TEMP_TABLE>
@@ -5550,7 +5638,7 @@ ASTKEYWORD_UNRESERVED KEYWORD_UNRESERVED (): {}
 //| <IN_MEMORY_METADATA>
 //| <INCLUDE_VERSION>
 //| <INCLUDING>
-//| <INCREMENT>
+| <INCREMENT>
 //| <INCREMENTAL>
 //| <INDEX_ASC>
 //| <INDEX_COMBINE>
@@ -5669,7 +5757,7 @@ ASTKEYWORD_UNRESERVED KEYWORD_UNRESERVED (): {}
 //| <MAXLOGMEMBERS>
 //| <MAXSIZE>
 //| <MAXTRANS>
-//| <MAXVALUE>
+| <MAXVALUE>
 //| <MEASURES>
 | <MEMBER>
 //| <MEMORY>
@@ -5686,7 +5774,7 @@ ASTKEYWORD_UNRESERVED KEYWORD_UNRESERVED (): {}
 //| <MINIMUM>
 //| <MINUS_NULL>
 | <MINUTE>
-//| <MINVALUE>
+| <MINVALUE>
 //| <MIRROR>
 | <MLSLABEL>
 //| <MODEL>
@@ -5798,7 +5886,7 @@ ASTKEYWORD_UNRESERVED KEYWORD_UNRESERVED (): {}
 //| <NOAPPEND>
 //| <NOARCHIVELOG>
 | <NOAUDIT>
-//| <NOCACHE>
+| <NOCACHE>
 //| <NOCPU_COSTING>
 | <NOCYCLE>
 //| <NODELAY>
@@ -6052,7 +6140,7 @@ ASTKEYWORD_UNRESERVED KEYWORD_UNRESERVED (): {}
 | <SELF> //20110524
 //| <SEMIJOIN>
 //| <SEMIJOIN_DRIVER>
-//| <SEQUENCE>
+| <SEQUENCE>
 //| <SEQUENCED>
 //| <SEQUENTIAL>
 //| <SERIALIZABLE>

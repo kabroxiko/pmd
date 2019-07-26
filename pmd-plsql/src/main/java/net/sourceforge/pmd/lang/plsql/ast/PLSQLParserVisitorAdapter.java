@@ -67,6 +67,11 @@ public class PLSQLParserVisitorAdapter implements PLSQLParserVisitor {
     }
 
     @Override
+    public Object visit(ASTSequence node, Object data) {
+        return visit((PLSQLNode) node, data);
+    }
+
+    @Override
     public Object visit(ASTObjectNameDeclaration node, Object data) {
         return visit((PLSQLNode) node, data);
     }
@@ -128,6 +133,11 @@ public class PLSQLParserVisitorAdapter implements PLSQLParserVisitor {
 
     @Override
     public Object visit(ASTDateTimeLiteral node, Object data) {
+        return visit((PLSQLNode) node, data);
+    }
+
+    @Override
+    public Object visit(ASTExceptionHandlersBegin node, Object data) {
         return visit((PLSQLNode) node, data);
     }
 
@@ -368,6 +378,21 @@ public class PLSQLParserVisitorAdapter implements PLSQLParserVisitor {
 
     @Override
     public Object visit(ASTCaseExpression node, Object data) {
+        return visit((PLSQLNode) node, data);
+    }
+
+    @Override
+    public Object visit(ASTSimpleCaseExpression node, Object data) {
+        return visit((PLSQLNode) node, data);
+    }
+
+    @Override
+    public Object visit(ASTSearchedCaseExpression node, Object data) {
+        return visit((PLSQLNode) node, data);
+    }
+
+    @Override
+    public Object visit(ASTElseCaseExpression node, Object data) {
         return visit((PLSQLNode) node, data);
     }
 
@@ -697,6 +722,16 @@ public class PLSQLParserVisitorAdapter implements PLSQLParserVisitor {
     }
 
     @Override
+    public Object visit(ASTParameterName node, Object data) {
+        return visit((PLSQLNode) node, data);
+    }
+
+    @Override
+    public Object visit(ASTParameterType node, Object data) {
+        return visit((PLSQLNode) node, data);
+    }
+
+    @Override
     public Object visit(ASTIsOfTypeCondition node, Object data) {
         return visit((PLSQLNode) node, data);
     }
@@ -844,6 +879,11 @@ public class PLSQLParserVisitorAdapter implements PLSQLParserVisitor {
 
     @Override
     public Object visit(ASTCompoundCondition node, Object data) {
+        return visit((PLSQLNode) node, data);
+    }
+
+    @Override
+    public Object visit(ASTNextCondition node, Object data) {
         return visit((PLSQLNode) node, data);
     }
 

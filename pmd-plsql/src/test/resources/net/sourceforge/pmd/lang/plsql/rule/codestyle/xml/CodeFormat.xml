@@ -6,16 +6,37 @@
 
     <test-code>
         <description>SQL Queries - ok</description>
+        <rule-property name="queryAlignment">Indent</rule-property>
+        <rule-property name="indentation">3</rule-property>
         <expected-problems>0</expected-problems>
         <code><![CDATA[
 BEGIN
   SELECT cmer_id
         ,version
         ,cmp_id
-    BULK COLLECT INTO v_cmer_ids
+     BULK COLLECT INTO v_cmer_ids
         ,v_versions
         ,v_cmp_ids
-    FROM cmer;
+     FROM cmer;
+END;
+/
+        ]]></code>
+        <source-type>plsql</source-type>
+    </test-code>
+
+    <test-code>
+        <description>SQL Queries - ok</description>
+        <rule-property name="queryAlignment">Left</rule-property>
+        <expected-problems>0</expected-problems>
+        <code><![CDATA[
+BEGIN
+  SELECT cmer_id
+        ,version
+        ,cmp_id
+  BULK COLLECT INTO v_cmer_ids
+        ,v_versions
+        ,v_cmp_ids
+  FROM   cmer;
 END;
 /
         ]]></code>
@@ -24,6 +45,9 @@ END;
 
     <test-code>
         <description>SQL Queries - bad</description>
+        <rule-property name="queryAlignment">Indent</rule-property>
+        <rule-property name="indentation">2</rule-property>
+        <rule-property name="parameterOnNewLine">true</rule-property>
         <expected-problems>6</expected-problems>
         <expected-linenumbers>2,2,3,3,3,4</expected-linenumbers>
         <expected-messages>
@@ -47,6 +71,10 @@ END;
 
     <test-code>
         <description>SQL Queries: each join on separate lines, union aligned - ok</description>
+        <rule-property name="queryAlignment">Indent</rule-property>
+        <rule-property name="indentation">2</rule-property>
+        <rule-property name="parameterOnNewLine">true</rule-property>
+        <rule-property name="joinConditionOnNewLine">false</rule-property>
         <expected-problems>0</expected-problems>
         <code><![CDATA[
 BEGIN
@@ -77,6 +105,10 @@ END;
 
     <test-code>
         <description>SQL Queries: each join on separate lines - violation</description>
+        <rule-property name="queryAlignment">Indent</rule-property>
+        <rule-property name="indentation">2</rule-property>
+        <rule-property name="parameterOnNewLine">true</rule-property>
+        <rule-property name="joinConditionOnNewLine">false</rule-property>
         <expected-problems>4</expected-problems>
         <expected-linenumbers>12,12,12,12</expected-linenumbers>
         <expected-messages>
@@ -111,6 +143,10 @@ END;
 
     <test-code>
         <description>SQL Queries: union not aligned - violation</description>
+        <rule-property name="queryAlignment">Indent</rule-property>
+        <rule-property name="indentation">2</rule-property>
+        <rule-property name="parameterOnNewLine">true</rule-property>
+        <rule-property name="joinConditionOnNewLine">false</rule-property>
         <expected-problems>1</expected-problems>
         <expected-linenumbers>16</expected-linenumbers>
         <expected-messages>
@@ -144,6 +180,10 @@ END;
 
     <test-code>
         <description>SQL Queries: union not aligned on wrong line - violation</description>
+        <rule-property name="queryAlignment">Indent</rule-property>
+        <rule-property name="indentation">2</rule-property>
+        <rule-property name="parameterOnNewLine">true</rule-property>
+        <rule-property name="joinConditionOnNewLine">false</rule-property>
         <expected-problems>2</expected-problems>
         <expected-linenumbers>15,15</expected-linenumbers>
         <expected-messages>
@@ -177,6 +217,11 @@ END;
 
     <test-code>
         <description>Parameters - ok</description>
+        <rule-property name="queryAlignment">Indent</rule-property>
+        <rule-property name="indentation">2</rule-property>
+        <rule-property name="parameterOnNewLine">true</rule-property>
+        <rule-property name="procedureNameFormat">.*</rule-property>
+        <rule-property name="parameterNameFormat">.*;.*;.*;.*</rule-property>
         <expected-problems>0</expected-problems>
         <code><![CDATA[
 -- comment is necessary in order to not trim the whitespace at the beginning
@@ -191,6 +236,11 @@ END;
 
     <test-code>
         <description>Parameters - not aligned</description>
+        <rule-property name="queryAlignment">Indent</rule-property>
+        <rule-property name="indentation">2</rule-property>
+        <rule-property name="parameterOnNewLine">true</rule-property>
+        <rule-property name="procedureNameFormat">.*</rule-property>
+        <rule-property name="parameterNameFormat">.*;.*;.*;.*</rule-property>
         <expected-problems>4</expected-problems>
         <expected-linenumbers>3,3,4,4</expected-linenumbers>
         <expected-messages>
@@ -211,6 +261,11 @@ END;
 
     <test-code>
         <description>Variables - ok</description>
+        <rule-property name="queryAlignment">Indent</rule-property>
+        <rule-property name="indentation">2</rule-property>
+        <rule-property name="parameterOnNewLine">true</rule-property>
+        <rule-property name="procedureNameFormat">.*</rule-property>
+        <rule-property name="localVariableNameFormat">.*</rule-property>
         <expected-problems>0</expected-problems>
         <code><![CDATA[
 PROCEDURE create_prospect()
@@ -228,6 +283,11 @@ PROCEDURE create_prospect()
 
     <test-code>
         <description>Variables - same line, not ok</description>
+        <rule-property name="queryAlignment">Indent</rule-property>
+        <rule-property name="indentation">2</rule-property>
+        <rule-property name="parameterOnNewLine">true</rule-property>
+        <rule-property name="procedureNameFormat">.*</rule-property>
+        <rule-property name="localVariableNameFormat">.*</rule-property>
         <expected-problems>8</expected-problems>
         <expected-linenumbers>3,3,3,3,3,3,3,3</expected-linenumbers>
         <expected-messages>
@@ -252,6 +312,11 @@ PROCEDURE create_prospect()
 
     <test-code>
         <description>Variables - types not aligned</description>
+        <rule-property name="queryAlignment">Indent</rule-property>
+        <rule-property name="indentation">2</rule-property>
+        <rule-property name="parameterOnNewLine">true</rule-property>
+        <rule-property name="procedureNameFormat">.*</rule-property>
+        <rule-property name="localVariableNameFormat">.*</rule-property>
         <expected-problems>4</expected-problems>
         <expected-linenumbers>4,5,6,7</expected-linenumbers>
         <expected-messages>
@@ -276,6 +341,9 @@ PROCEDURE create_prospect()
 
     <test-code>
         <description>Calling a procedure / function - ok</description>
+        <rule-property name="queryAlignment">Indent</rule-property>
+        <rule-property name="indentation">2</rule-property>
+        <rule-property name="parameterOnNewLine">true</rule-property>
         <expected-problems>0</expected-problems>
         <code><![CDATA[
 BEGIN
@@ -306,6 +374,9 @@ END;
 
     <test-code>
         <description>Calling a procedure / function - same line</description>
+        <rule-property name="queryAlignment">Indent</rule-property>
+        <rule-property name="indentation">2</rule-property>
+        <rule-property name="parameterOnNewLine">true</rule-property>
         <expected-problems>8</expected-problems>
         <expected-linenumbers>4,4,5,5,5,5,6,6</expected-linenumbers>
         <expected-messages>
@@ -334,6 +405,9 @@ END;
 
     <test-code>
         <description>Calling a procedure / function - line too long</description>
+        <rule-property name="queryAlignment">Indent</rule-property>
+        <rule-property name="indentation">2</rule-property>
+        <rule-property name="parameterOnNewLine">true</rule-property>
         <expected-problems>1</expected-problems>
         <expected-linenumbers>3</expected-linenumbers>
         <expected-messages>
@@ -351,6 +425,9 @@ END;
 
     <test-code>
         <description>Calling a procedure / function - bad alignment</description>
+        <rule-property name="queryAlignment">Indent</rule-property>
+        <rule-property name="indentation">2</rule-property>
+        <rule-property name="parameterOnNewLine">true</rule-property>
         <expected-problems>5</expected-problems>
         <expected-linenumbers>4,5,6,7,8</expected-linenumbers>
         <expected-messages>
@@ -378,6 +455,9 @@ END;
 
     <test-code>
         <description>Calling a procedure / function - closing paranthesis should be on a new line</description>
+        <rule-property name="queryAlignment">Indent</rule-property>
+        <rule-property name="indentation">2</rule-property>
+        <rule-property name="parameterOnNewLine">true</rule-property>
         <expected-problems>1</expected-problems>
         <expected-linenumbers>3</expected-linenumbers>
         <expected-messages>
@@ -400,6 +480,9 @@ END;
 
     <test-code>
         <description>Calling a procedure / function without named parameters - ok</description>
+        <rule-property name="queryAlignment">Indent</rule-property>
+        <rule-property name="indentation">2</rule-property>
+        <rule-property name="parameterOnNewLine">true</rule-property>
         <expected-problems>0</expected-problems>
         <code><![CDATA[
 BEGIN
@@ -416,6 +499,9 @@ END;
 
     <test-code>
         <description>Calling a procedure / function without named parameters - not ok</description>
+        <rule-property name="queryAlignment">Indent</rule-property>
+        <rule-property name="indentation">2</rule-property>
+        <rule-property name="parameterOnNewLine">true</rule-property>
         <expected-problems>1</expected-problems>
         <expected-linenumbers>4</expected-linenumbers>
         <expected-messages>
@@ -439,6 +525,12 @@ END;
 
     <test-code>
         <description>Complete Coding Style example</description>
+        <rule-property name="queryAlignment">Indent</rule-property>
+        <rule-property name="indentation">2</rule-property>
+        <rule-property name="parameterOnNewLine">true</rule-property>
+        <rule-property name="procedureNameFormat">.*</rule-property>
+        <rule-property name="parameterNameFormat">.*;.*;.*;.*</rule-property>
+        <rule-property name="localVariableNameFormat">.*</rule-property>
         <expected-problems>0</expected-problems>
         <code><![CDATA[
 PROCEDURE create_prospect(

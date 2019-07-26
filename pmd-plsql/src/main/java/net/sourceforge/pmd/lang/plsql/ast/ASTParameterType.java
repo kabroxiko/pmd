@@ -6,14 +6,14 @@ package net.sourceforge.pmd.lang.plsql.ast;
 
 import java.util.Locale;
 
-public class ASTCompoundCondition extends net.sourceforge.pmd.lang.plsql.ast.AbstractPLSQLNode {
+public class ASTParameterType extends net.sourceforge.pmd.lang.plsql.ast.AbstractPLSQLNode {
     private String type;
 
-    public ASTCompoundCondition(int id) {
+    public ASTParameterType(int id) {
         super(id);
     }
 
-    public ASTCompoundCondition(PLSQLParser p, int id) {
+    public ASTParameterType(PLSQLParser p, int id) {
         super(p, id);
     }
 
@@ -33,4 +33,4 @@ public class ASTCompoundCondition extends net.sourceforge.pmd.lang.plsql.ast.Abs
         }
     }
 }
-/* JavaCC - OriginalChecksum=e16db32ec742f0a3836eafa8756cfbc2 (do not edit this line) */
+/* JavaCC - OriginalChecksum=830aa91d2222f7a339f8f8bc4b355110 (do not edit this line) */

@@ -15,7 +15,7 @@ import net.sourceforge.pmd.lang.plsql.ast.ASTCaseStatement;
 import net.sourceforge.pmd.lang.plsql.ast.ASTCaseWhenClause;
 import net.sourceforge.pmd.lang.plsql.ast.ASTConditionalOrExpression;
 import net.sourceforge.pmd.lang.plsql.ast.ASTElsifClause;
-import net.sourceforge.pmd.lang.plsql.ast.ASTExceptionHandler;
+import net.sourceforge.pmd.lang.plsql.ast.ASTExceptionHandlersBegin;
 import net.sourceforge.pmd.lang.plsql.ast.ASTExpression;
 import net.sourceforge.pmd.lang.plsql.ast.ASTForStatement;
 import net.sourceforge.pmd.lang.plsql.ast.ASTIfStatement;
@@ -131,10 +131,10 @@ public class CyclomaticComplexityRule extends AbstractPLSQLRule {
     }
 
     @Override
-    public Object visit(ASTExceptionHandler node, Object data) {
-        LOGGER.entering(CLASS_NAME, "visit(ASTExceptionHandler)");
+    public Object visit(ASTExceptionHandlersBegin node, Object data) {
+        LOGGER.entering(CLASS_NAME, "visit(ASTExceptionHandlersBegin)");
         entryStack.peek().bumpDecisionPoints();
-        LOGGER.exiting(CLASS_NAME, "visit(ASTExceptionHandler)");
+        LOGGER.exiting(CLASS_NAME, "visit(ASTExceptionHandlersBegin)");
         super.visit(node, data);
         return data;
     }

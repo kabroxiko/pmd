@@ -13,7 +13,7 @@ import net.sourceforge.pmd.lang.plsql.ast.ASTCaseWhenClause;
 import net.sourceforge.pmd.lang.plsql.ast.ASTContinueStatement;
 import net.sourceforge.pmd.lang.plsql.ast.ASTElseClause;
 import net.sourceforge.pmd.lang.plsql.ast.ASTElsifClause;
-import net.sourceforge.pmd.lang.plsql.ast.ASTExceptionHandler;
+import net.sourceforge.pmd.lang.plsql.ast.ASTExceptionHandlersBegin;
 import net.sourceforge.pmd.lang.plsql.ast.ASTExitStatement;
 import net.sourceforge.pmd.lang.plsql.ast.ASTExpression;
 import net.sourceforge.pmd.lang.plsql.ast.ASTForStatement;
@@ -143,7 +143,7 @@ public abstract class AbstractNcssCountRule extends AbstractStatisticalPLSQLRule
     }
 
     @Override
-    public Object visit(ASTExceptionHandler node, Object data) {
+    public Object visit(ASTExceptionHandlersBegin node, Object data) {
         return countNodeChildren(node, data);
     }
 
